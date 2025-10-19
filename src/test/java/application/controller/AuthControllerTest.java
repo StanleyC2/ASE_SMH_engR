@@ -1,8 +1,7 @@
 package application.controller;
 
-import application.service.AuthService;
 import application.model.User;
-
+import application.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class AuthControllerTest {
 
@@ -36,16 +35,15 @@ class AuthControllerTest {
 
     User savedUser = new User();
     savedUser.setUsername("testuser");
-    savedUser.setPassword("password123");
     savedUser.setEmail("testuser@example.com");
     savedUser.setRole("ROLE_USER");
 
     when(authService.register(requestUser)).thenReturn(savedUser);
 
-    ResponseEntity<User> response = authController.register(requestUser);
+    ResponseEntity<?> response = authController.register(requestUser);
 
     assertEquals(200, response.getStatusCodeValue());
-    assertEquals("testuser", response.getBody().getUsername());
+    assertEquals("testuser", ((User) response.getBody()).getUsername());
     verify(authService, times(1)).register(requestUser);
   }
 
@@ -57,7 +55,7 @@ class AuthControllerTest {
 
     when(authService.login(loginUser)).thenReturn("mockJwtToken");
 
-    ResponseEntity<String> response = authController.login(loginUser);
+    ResponseEntity<?> response = authController.login(loginUser);
 
     assertEquals(200, response.getStatusCodeValue());
     assertEquals("mockJwtToken", response.getBody());

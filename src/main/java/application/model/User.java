@@ -7,7 +7,6 @@ import lombok.*;
  * Entity representing a user in the system.
  * Stores basic user information such as username, email, password, and role.
  */
-
 @Entity
 @Table(name = "users")
 @Getter
