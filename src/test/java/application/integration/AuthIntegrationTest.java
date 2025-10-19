@@ -2,6 +2,7 @@ package application.integration;
 
 import application.model.User;
 import application.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,14 +11,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional // rollback after each test
 class AuthIntegrationTest {
 
   @Autowired
@@ -35,9 +36,10 @@ class AuthIntegrationTest {
     objectMapper = new ObjectMapper();
     passwordEncoder = new BCryptPasswordEncoder();
 
+    // seed default user
     User user = User.builder()
         .username("testuser")
-        .password(passwordEncoder.encode("testpass")) // encode password
+        .password(passwordEncoder.encode("testpass"))
         .email("testuser@example.com")
         .role("ROLE_USER")
         .build();
@@ -72,7 +74,7 @@ class AuthIntegrationTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(loginUser)))
         .andExpect(status().isOk())
-        .andExpect(content().string(org.hamcrest.Matchers.notNullValue())); // JWT token returned
+        .andExpect(content().string(org.hamcrest.Matchers.notNullValue())); // JWT token
   }
 
   @Test
@@ -87,7 +89,7 @@ class AuthIntegrationTest {
     mockMvc.perform(post("/auth/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(duplicate)))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -102,7 +104,7 @@ class AuthIntegrationTest {
     mockMvc.perform(post("/auth/register")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(duplicateEmail)))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -115,7 +117,7 @@ class AuthIntegrationTest {
     mockMvc.perform(post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(wrongPass)))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -128,6 +130,6 @@ class AuthIntegrationTest {
     mockMvc.perform(post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(nonUser)))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isUnauthorized());
   }
 }
