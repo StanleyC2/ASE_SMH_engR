@@ -1,0 +1,3 @@
+application/integration/AuthIntegrationTest.class
+application/service/AuthServiceTest.class
+application/controller/AuthControllerTest.class
