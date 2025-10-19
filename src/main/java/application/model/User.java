@@ -1,15 +1,40 @@
 package application.model;
 
-public class User {
-  private String email;
-  private String password;
-  private String role;
+import jakarta.persistence.*;
+import lombok.*;
 
-  // Getters and setters
-  public String getEmail() { return email; }
-  public void setEmail(String email) { this.email = email; }
-  public String getPassword() { return password; }
-  public void setPassword(String password) { this.password = password; }
-  public String getRole() { return role; }
-  public void setRole(String role) { this.role = role; }
+/**
+ * Entity representing a user in the system.
+ * Stores basic user information such as username, email, password, and role.
+ */
+
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+
+  /** Primary key */
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  /** Username of the user, must be unique */
+  @Column(unique = true, nullable = false)
+  private String username;
+
+  /** User's hashed password */
+  @Column(nullable = false)
+  private String password;
+
+  /** Email of the user, must be unique */
+  @Column(unique = true, nullable = false)
+  private String email;
+
+  /** Role of the user (e.g., ROLE_USER) */
+  @Column(nullable = false)
+  private String role;
 }

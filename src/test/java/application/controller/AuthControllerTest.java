@@ -1,4 +1,66 @@
 package application.controller;
 
-public class AuthControllerTest {
+import application.service.AuthService;
+import application.model.User;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class AuthControllerTest {
+
+  @Mock
+  private AuthService authService;
+
+  @InjectMocks
+  private AuthController authController;
+
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+  }
+
+  @Test
+  void testRegisterEndpoint() {
+    User requestUser = new User();
+    requestUser.setUsername("testuser");
+    requestUser.setPassword("password123");
+    requestUser.setEmail("testuser@example.com");
+    requestUser.setRole("ROLE_USER");
+
+    User savedUser = new User();
+    savedUser.setUsername("testuser");
+    savedUser.setPassword("password123");
+    savedUser.setEmail("testuser@example.com");
+    savedUser.setRole("ROLE_USER");
+
+    when(authService.register(requestUser)).thenReturn(savedUser);
+
+    ResponseEntity<User> response = authController.register(requestUser);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals("testuser", response.getBody().getUsername());
+    verify(authService, times(1)).register(requestUser);
+  }
+
+  @Test
+  void testLoginEndpoint() {
+    User loginUser = new User();
+    loginUser.setUsername("testuser");
+    loginUser.setPassword("password123");
+
+    when(authService.login(loginUser)).thenReturn("mockJwtToken");
+
+    ResponseEntity<String> response = authController.login(loginUser);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals("mockJwtToken", response.getBody());
+    verify(authService, times(1)).login(loginUser);
+  }
 }
