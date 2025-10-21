@@ -6,16 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import javax.naming.AuthenticationException;
 
 import application.model.Recommender;
 import application.model.Response;
-import application.model.RoommateRecommender;
 import application.model.User;
 import application.repository.ResponseRepository;
 import application.repository.UserRepository;
 import application.security.JwtService;
-import lombok.RequiredArgsConstructor;
 
 @Service
 public class RecService {
@@ -34,15 +33,16 @@ public class RecService {
   }
 
 
-  private User getUserFromToken(String token) {
+  private User getUserFromToken(String token)
+          throws RuntimeException, NoSuchElementException {
     if (!jwtService.validateToken(token)) {
-      throw new RuntimeException("Invalid token");
+      throw new RuntimeException("Invalid/Expired token");
     }
 
     String username = jwtService.extractUsername(token);
     Optional<User> optionalUser = userRepository.findByUsername(username);
     if (optionalUser.isEmpty()) {
-      throw new RuntimeException("User not found");
+      throw new NoSuchElementException("User not found");
     }
 
     return optionalUser.get();
@@ -62,6 +62,8 @@ public class RecService {
    * @param token The token of user who has these responses.
    * @param answers The responses to the questions in numerical representation (1-10).
    * @return The user's response.
+   * @throws IllegalArgumentException If the token is invalid.
+   * @throws NoSuchElementException If the user was not found.
    */
   public Response addOrReplaceResponse(String token, List<Integer> answers) {
     User user = getUserFromToken(token);
@@ -70,7 +72,7 @@ public class RecService {
     Response response =
             responseRepository.findById(id).orElse(new Response());
 
-    response.setId(id);
+    response.setUserId(id);
     response.setResponseValues(answers);
 
     return responseRepository.save(response);
@@ -88,7 +90,7 @@ public class RecService {
 
     Response response = responseRepository.getResponseByUserId(user.getId()).get();
 
-    List<Long> userIds = recommender.getRecommendation(response, allResponses);
+    List<Long> userIds = recommender.getRecommendation(response, allResponses, 8);
 
     List<User> result = new ArrayList<>();
     for (Long id : userIds) {

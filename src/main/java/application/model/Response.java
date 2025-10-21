@@ -19,7 +19,7 @@ public class Response {
    */
   @Id
   @Column(unique = true, nullable = false)
-  private Long id;
+  private Long userId;
 
   @ElementCollection
   @Column(nullable = false)
