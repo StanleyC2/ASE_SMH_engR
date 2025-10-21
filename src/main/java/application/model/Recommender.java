@@ -9,18 +9,16 @@ import java.util.List;
 public interface Recommender {
 
   /**
-   * Gets a user's response to personality questions.
-   * @param user The user who has these responses.
-   * @param responses The responses to the questions in numerical representation.
-   * @return If the responses are valid and the user has been added into the recommendation system.
+   * Gets a list of recommendations from the given list of all responses based on the given user
+   * response.
+   * @param userResponse The user to get a recommendation for.
+   * @param allResponses The responses to find recommendations from.
+   * @return A list of recommended users ids.
    */
-  boolean getResponse(User user, int[] responses);
+  List<Long> getRecommendation(Response userResponse, List<Response> allResponses);
 
   /**
-   * Gets a list of recommendations based on previously answered responses for a given user. If
-   * there were no responses for a user before, will return an empty list.
-   * @param user The user to get a recommendation for.
-   * @return A list of recommended users.
+   * Gets the expected number of questions.
    */
-  List<User> getRecommendation(User user);
+  int getExpectedNumberQuestion();
 }
