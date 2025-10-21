@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -18,18 +19,36 @@ public class RoommateRecommender implements Recommender {
   private Map<User, int[]> responses;
 
   public RoommateRecommender() {
-    new RoommateRecommender(8, new HashMap<>());
+    this(8, new HashMap<>());
   }
 
   public RoommateRecommender(int numQuestions) {
-    new RoommateRecommender(numQuestions, new HashMap<>());
+    this(numQuestions, new HashMap<>());
   }
 
   public RoommateRecommender(int numQuestions, Map<User, int[]> responses) {
+    if (numQuestions < 1) {
+      throw new IllegalArgumentException("Number of questions must be greater than 0");
+    }
+    if (responses == null) {
+      throw new IllegalArgumentException("Response map cannot be null");
+    }
+    if (!responses.isEmpty()) {
+      for (Map.Entry<User, int[]> entry : responses.entrySet()) {
+        if (entry.getValue().length != numQuestions) {
+          throw new IllegalArgumentException("Number of questions does not match " +
+                  "the number of responses");
+        }
+        for (Integer i : entry.getValue()) {
+          if (i < 1 || i > 10) {
+            throw new IllegalArgumentException("Responses must be between 1 and 10");
+          }
+        }
+      }
+    }
     this.numQuestions = numQuestions;
     this.responses = responses;
   }
-
 
   /**
    * Gets a user's response to 8 personality questions.
@@ -126,12 +145,13 @@ public class RoommateRecommender implements Recommender {
    * @param user The user to get a recommendation for.
    * @return A list of recommended users, if there are not enough users to recommend all 5, it
    * will return what it has.
+   * @throws java.util.NoSuchElementException if the user has put in no responses before.
    */
   @Override
   public List<User> getRecommendation(User user) {
 
     if (!this.responses.containsKey(user)) {
-      return new ArrayList<>();
+      throw new NoSuchElementException("User has no recorded responses");
     }
 
     Queue<ScoredUser> queue = new PriorityQueue<>(
@@ -139,9 +159,12 @@ public class RoommateRecommender implements Recommender {
     );
 
     for (User u2 : this.responses.keySet()) {
-      double similarity = this.cosineSimilarity(u2, u2);
+      if (u2.equals(user)) {
+        continue;
+      }
+      double similarity = this.cosineSimilarity(user, u2);
 
-      if (0.4 - similarity < 1e-6) {
+      if (similarity < 0.4 - 1e-6) {
         continue;
       }
 
