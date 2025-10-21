@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
@@ -20,7 +19,7 @@ class RoommateRecommenderTest {
   private RoommateRecommender recommender;
   private List<User> users;
   private Random rand;
-  private HashMap<User, int[]> responses;
+  private HashMap<User, Response> responses;
 
   @BeforeEach
   public void setUp() {
@@ -31,6 +30,7 @@ class RoommateRecommenderTest {
     for (int i = 0; i < 20; i++) {
       User u = new User();
       u.setUsername("u" + i);
+      u.setId(1L + i);
       users.add(u);
     }
 
@@ -59,10 +59,11 @@ class RoommateRecommenderTest {
     );
 
     for (int i = 0; i < randomResponses.size(); i++) {
-      responses.put(users.get(i), randomResponses.get(i).stream().mapToInt(x -> x).toArray());
+      responses.put(users.get(i),
+              new Response(users.get(i).getId(), randomResponses.get(i)));
     }
 
-    recommender = new RoommateRecommender(8, responses);
+    recommender = new RoommateRecommender(8);
   }
 
   /**
@@ -73,10 +74,7 @@ class RoommateRecommenderTest {
     Recommender recommender = new RoommateRecommender();
 
     assertNotNull(recommender);
-
-    assertFalse(recommender.getResponse(new User(), new int[]{1, 1, 1}));
-
-    assertTrue(recommender.getResponse(new User(), new int[]{1, 1, 1, 1, 1, 1, 1, 1}));
+    assertEquals(8, recommender.getExpectedNumberQuestion());
   }
 
   /**
@@ -88,9 +86,7 @@ class RoommateRecommenderTest {
 
     assertNotNull(recommender);
 
-    assertTrue(recommender.getResponse(new User(), new int[]{1, 1, 1}));
-
-    assertFalse(recommender.getResponse(new User(), new int[]{1, 1, 1, 1, 1, 1, 1, 1}));
+    assertEquals(3, recommender.getExpectedNumberQuestion());
   }
 
   /**
@@ -113,152 +109,7 @@ class RoommateRecommenderTest {
             () -> new RoommateRecommender(0));
   }
 
-  /**
-   * Test creating a recommendor with number of questions and responses already populated, but
-   * some of the response has the wrong number of answers.
-   */
-  @Test
-  public void testRecommender_WithNumQuesAndResponses() {
-    Map<User, int[]> dummyResponses = new HashMap<>();
-    for (int i = 0; i < 20; i++) {
-      int numResponses = rand.nextInt(3, 10);
-      int[] answers = new int[numResponses];
-      for (int j = 0; j < numResponses; j++) {
-        answers[j] = rand.nextInt(1, 10);
-      }
-      dummyResponses.put(new User(), answers);
-    }
-    dummyResponses.put(new User(), new int[]{1, 1, 1});
-    assertThrows(IllegalArgumentException.class,
-            () -> new RoommateRecommender(5, dummyResponses));
-  }
 
-  /**
-   * Test creating a recommendor with number of questions and responses already populated, but
-   * some of the response have invalid responses.
-   */
-  @Test
-  public void testRecommender_WithNumQuesAndResponses2() {
-    Map<User, int[]> dummyResponses = new HashMap<>();
-    for (int i = 0; i < 20; i++) {
-      int[] answers = new int[5];
-      for (int j = 0; j < 5; j++) {
-        answers[j] = rand.nextInt(-10, 10);
-      }
-      dummyResponses.put(new User(), answers);
-    }
-    dummyResponses.put(new User(), new int[]{1, 1, -1, 6, 7});
-    assertThrows(IllegalArgumentException.class,
-            () -> new RoommateRecommender(5, dummyResponses));
-  }
-
-  /**
-   * Test creating a recommendor with number of questions and responses already populated, but
-   * there are no responses.
-   */
-  @Test
-  public void testRecommender_WithNumQuesAndResponses3() {
-    Map<User, int[]> dummyResponses = new HashMap<>();
-    Recommender recommender = new RoommateRecommender(5, dummyResponses);
-
-    assertTrue(recommender.getResponse(new User(), new int[]{1, 1, 1, 4, 5}));
-
-    assertFalse(recommender.getResponse(new User(), new int[]{1, 1, 1, 1, 1, 1, 1, 1}));
-  }
-
-  /**
-   * Test getting valid responses.
-   */
-  @Test
-  public void testGetResponse() {
-    User testUser = new User();
-    testUser.setUsername("test user");
-    int[] responses = new int[8];
-
-    for (int i = 0; i < responses.length; i++) {
-      responses[i] = rand.nextInt(1, 11);
-    }
-
-    assertTrue(this.recommender.getResponse(testUser, responses));
-    //Not Sure if we want this, or if we want the constructor to make a copy of the repsonses it
-    // input.
-    assertTrue(this.responses.containsKey(testUser));
-  }
-
-  /**
-   * Test sending in a response with not enough answers.
-   */
-  @Test
-  public void testGetResponse2() {
-    User testUser = new User();
-    testUser.setUsername("test user");
-    int[] responses = new int[7];
-
-    for (int i = 0; i < responses.length; i++) {
-      responses[i] = rand.nextInt(1, 11);
-    }
-
-    assertFalse(this.recommender.getResponse(testUser, responses));
-    assertFalse(this.responses.containsKey(testUser));
-  }
-
-  /**
-   * Test sending in a response with 0 answers.
-   */
-  @Test
-  public void testGetResponse3() {
-    User testUser = new User();
-    testUser.setUsername("test user");
-    int[] responses = new int[0];
-
-    assertFalse(this.recommender.getResponse(testUser, responses));
-    assertFalse(this.responses.containsKey(testUser));
-  }
-
-  /**
-   * Test sending in a response with too many answers.
-   */
-  @Test
-  public void testGetResponse4() {
-    User testUser = new User();
-    testUser.setUsername("test user");
-    int[] responses = new int[100];
-
-    for (int i = 0; i < responses.length; i++) {
-      responses[i] = rand.nextInt(1, 11);
-    }
-
-    assertFalse(this.recommender.getResponse(testUser, responses));
-    assertFalse(this.responses.containsKey(testUser));
-  }
-
-  /**
-   * Test sending in a response with at least 1 negative answers.
-   */
-  @Test
-  public void testGetResponse5() {
-    User testUser = new User();
-    testUser.setUsername("test user");
-    int[] responses = new int[8];
-
-    for (int i = 0; i < responses.length; i++) {
-      responses[i] = rand.nextInt(1, 11);
-    }
-
-    boolean hasNegative = false;
-    for (int i = 0; i < responses.length; i++) {
-      if (rand.nextBoolean()) {
-        hasNegative = true;
-        responses[i] = -1 * responses[i];
-      }
-    }
-    if (!hasNegative) {
-      responses[rand.nextInt(0, responses.length)] = -1 * 5;
-    }
-
-    assertFalse(this.recommender.getResponse(testUser, responses));
-    assertFalse(this.responses.containsKey(testUser));
-  }
 
   /**
    * Test getting the recommendation for a user.
@@ -267,39 +118,127 @@ class RoommateRecommenderTest {
   public void testGetRecommendation() {
     User testUser = new User();
     testUser.setUsername("test user");
-    int[] responses = new int[]{8, 3, 4, 5, 9, 2, 7, 1};
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
-    assertTrue(recommender.getResponse(testUser, responses));
-
-    List<User> recommendation = recommender.getRecommendation(testUser);
-
+    List<Long> recommendation = recommender.getRecommendation(userResponse,
+            responses.values().stream().toList());
 
 
     assertEquals(5, recommendation.size());
-    List<String> names = recommendation.stream().map(User::getUsername).toList();
-    assertTrue(names.contains("u4"));
-    assertTrue(names.contains("u12"));
-    assertTrue(names.contains("u1"));
-    assertTrue(names.contains("u6"));
-    assertTrue(names.contains("u8"));
+    assertTrue(recommendation.contains(1L + 4));
+    assertTrue(recommendation.contains(1L + 12));
+    assertTrue(recommendation.contains(1L + 1));
+    assertTrue(recommendation.contains(1L + 6));
+    assertTrue(recommendation.contains(1L + 8));
   }
 
   /**
-   * Test getting the recommendation for a user that has not responded before.
+   * Test getting the recommendation for a user response that does not match the required number
+   * of answers.
    */
   @Test
-  public void testGetRecommendation_UnknownUser() {
+  public void testGetRecommendation_BadUserResponse() {
     User testUser = new User();
     testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1));
 
-    assertThrows(NoSuchElementException.class, () -> recommender.getRecommendation(testUser));
+    assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
+            responses.values().stream().toList()));
 
   }
 
+  /**
+   * Test getting the recommendation for a user response that has no answers.
+   */
+  @Test
+  public void testGetRecommendation_BadUserResponse2() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of());
+
+    assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
+            responses.values().stream().toList()));
+
+  }
+
+  /**
+   * Test getting the recommendation for a user response that has too many answers.
+   */
+  @Test
+  public void testGetRecommendation_BadUserResponse3() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1, 5, 6));
+
+    assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
+            responses.values().stream().toList()));
+
+  }
+
+  /**
+   * Test getting the recommendation when the all responses have no values.
+   */
+  @Test
+  public void testGetRecommendation_BadAllResponses() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1, 6));
+
+    List<Response> allResponses = new ArrayList<>();
+
+    for (int i = 0; i < 20; i++) {
+      allResponses.add(new Response(1L + i, List.of()));
+    }
+
+    assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
+            allResponses));
+
+  }
+
+  /**
+   * Test getting the recommendation when a random response doesnt have a response value.
+   */
+  @Test
+  public void testGetRecommendation_BadAllResponses2() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1, 6));
+
+    List<Response> allResponses = new ArrayList<>();
+
+    for (int i = 0; i < 20; i++) {
+      List<Integer> ans = new ArrayList<>();
+      for (int j = 0; j < 8; j++) {
+        ans.add(rand.nextInt(1, 11));
+      }
+      allResponses.add(new Response(1L + i, ans));
+    }
+
+    int badIndex = rand.nextInt(allResponses.size());
+    allResponses.add(badIndex, new Response(1L + badIndex, List.of()));
 
 
+    assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
+            allResponses));
+
+  }
+
+  /**
+   * Test getting the recommendation when there are no responses.
+   */
+  @Test
+  public void testGetRecommendation_NoAllResponses() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1, 6));
+
+    List<Response> allResponses = new ArrayList<>();
 
 
+    List<Long> recs = recommender.getRecommendation(userResponse,
+            allResponses);
+    assertEquals(0, recs.size());
+  }
 
 
 

@@ -1,0 +1,173 @@
+package application.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import application.model.Response;
+import application.model.RoommateRecommender;
+import application.model.User;
+import application.repository.ResponseRepository;
+import application.repository.UserRepository;
+import application.security.JwtService;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+class RecServiceTest {
+
+  @Mock
+  private UserRepository userRepository;
+
+  @Mock
+  private ResponseRepository responseRepository;
+
+  @Mock
+  private JwtService jwtService;
+
+  @Mock
+  private RoommateRecommender roommateRecommender;
+
+  @InjectMocks
+  private RecService recService;
+
+  @BeforeEach
+  void setUp() {
+    MockitoAnnotations.openMocks(this);
+  }
+
+  @Test
+  void testAddNewResponse_FromValidToken() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 1L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+    Response response = new Response();
+    response.setId(id);
+    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+
+    when(jwtService.validateToken(token)).thenReturn(true);
+    when(jwtService.extractUsername(token)).thenReturn(username);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(responseRepository.findById(id)).thenReturn(Optional.of(response));
+    when(responseRepository.save(response)).thenReturn(response);
+
+    Response result =
+            recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
+
+    assertNotNull(result);
+    assertEquals(user.getId(), result.getId());
+    assertEquals(Arrays.asList(1,2,3,4,5,6,7,8), result.getResponseValues());
+  }
+
+  /**
+   * Replace the old response with a new response.
+   */
+  @Test
+  void testAddNewResponse_FromValidToken2() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 1L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+    Response response = new Response();
+    response.setId(id);
+    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+
+    when(jwtService.validateToken(token)).thenReturn(true);
+    when(jwtService.extractUsername(token)).thenReturn(username);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(responseRepository.findById(id)).thenReturn(Optional.of(response));
+    when(responseRepository.save(response)).thenReturn(response);
+
+    Response result =
+            recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
+
+    assertNotNull(result);
+    assertEquals(user.getId(), result.getId());
+    assertEquals(Arrays.asList(1,2,3,4,5,6,7,8), result.getResponseValues());
+
+    Response result2 =
+            recService.addOrReplaceResponse(token, Arrays.asList(5,5,7,4,5,8,9,1));
+
+    assertNotNull(result2);
+    assertEquals(user.getId(), result2.getId());
+    assertEquals(Arrays.asList(5,5,7,4,5,8,9,1), result2.getResponseValues());
+  }
+
+  @Test
+  void testAddNewResponse_FromInvalidToken() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 1L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+    Response response = new Response();
+    response.setId(id);
+    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+
+    when(jwtService.validateToken(token)).thenReturn(false);
+
+    assertThrows(RuntimeException.class, ()
+            -> recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8)));
+  }
+
+  @Test
+  void testRecommendation_FromValidToken() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 10L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+    Response response = new Response();
+    response.setId(id);
+    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+
+    List<Response> dummyList = List.of(response);
+
+    List<Long> ids = new ArrayList<>();
+    List<User> users = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      User newUser = new User();
+      newUser.setId(2L + i);
+      users.add(newUser);
+      ids.add((long) i);
+    }
+
+    when(jwtService.validateToken(token)).thenReturn(true);
+    when(jwtService.extractUsername(token)).thenReturn(username);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(responseRepository.findById(id)).thenReturn(Optional.of(response));
+
+    for (long i = 0; i < 5; i++) {
+      when(userRepository.findById(i)).thenReturn(Optional.of(users.get((int)i)));
+    }
+    when(responseRepository.existsById(id)).thenReturn(true);
+    when(responseRepository.getResponseByUserId(id)).thenReturn(Optional.of(response));
+    when(responseRepository.findAll()).thenReturn(dummyList);
+    when(roommateRecommender.getRecommendation(response, dummyList)).thenReturn(ids);
+
+    List<User> result =
+            recService.recommendRoommates(token);
+
+    assertNotNull(result);
+    assertEquals(users, result);
+  }
+
+
+
+
+}
