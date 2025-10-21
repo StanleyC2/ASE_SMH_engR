@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,10 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class RoommateRecommenderTest {
 
-  private RoommateRecommender recommender;
   private List<User> users;
   private Random rand;
   private HashMap<User, Response> responses;
+  private Recommender recommender;
 
   @BeforeEach
   public void setUp() {
@@ -62,53 +61,8 @@ class RoommateRecommenderTest {
       responses.put(users.get(i),
               new Response(users.get(i).getId(), randomResponses.get(i)));
     }
-
-    recommender = new RoommateRecommender(8);
+    recommender = new Recommender();
   }
-
-  /**
-   * Test Creating a recommendor with no parameters.
-   */
-  @Test
-  public void testRecommender() {
-    Recommender recommender = new RoommateRecommender();
-
-    assertNotNull(recommender);
-    assertEquals(8, recommender.getExpectedNumberQuestion());
-  }
-
-  /**
-   * Test creating a recommendor with the number of questions parameter.
-   */
-  @Test
-  public void testRecommender_WithNumQues() {
-    Recommender recommender = new RoommateRecommender(3);
-
-    assertNotNull(recommender);
-
-    assertEquals(3, recommender.getExpectedNumberQuestion());
-  }
-
-  /**
-   * Test creating a recommendor with a negative number of questions.
-   */
-  @Test
-  public void testRecommender_WithNumQues2() {
-    for (int i = 0; i < 100; i++) {
-      assertThrows(IllegalArgumentException.class,
-              () -> new RoommateRecommender(-1 * rand.nextInt(1, 1000)));
-    }
-  }
-
-  /**
-   * Test creating a recommendor with 0 questions.
-   */
-  @Test
-  public void testRecommender_WithNumQues3() {
-    assertThrows(IllegalArgumentException.class,
-            () -> new RoommateRecommender(0));
-  }
-
 
 
   /**
@@ -121,7 +75,7 @@ class RoommateRecommenderTest {
     Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
     List<Long> recommendation = recommender.getRecommendation(userResponse,
-            responses.values().stream().toList());
+            responses.values().stream().toList(), 8);
 
 
     assertEquals(5, recommendation.size());
@@ -143,7 +97,7 @@ class RoommateRecommenderTest {
     Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1));
 
     assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
-            responses.values().stream().toList()));
+            responses.values().stream().toList(), 8));
 
   }
 
@@ -157,7 +111,7 @@ class RoommateRecommenderTest {
     Response userResponse = new Response(testUser.getId(), List.of());
 
     assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
-            responses.values().stream().toList()));
+            responses.values().stream().toList(), 8));
 
   }
 
@@ -171,7 +125,7 @@ class RoommateRecommenderTest {
     Response userResponse = new Response(testUser.getId(), List.of(8, 3, 4, 5, 9, 7, 1, 5, 6));
 
     assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
-            responses.values().stream().toList()));
+            responses.values().stream().toList(), 8));
 
   }
 
@@ -191,7 +145,7 @@ class RoommateRecommenderTest {
     }
 
     assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
-            allResponses));
+            allResponses, 8));
 
   }
 
@@ -219,7 +173,7 @@ class RoommateRecommenderTest {
 
 
     assertThrows(IllegalArgumentException.class, () -> recommender.getRecommendation(userResponse,
-            allResponses));
+            allResponses, 8));
 
   }
 
@@ -236,8 +190,41 @@ class RoommateRecommenderTest {
 
 
     List<Long> recs = recommender.getRecommendation(userResponse,
-            allResponses);
+            allResponses, 8);
     assertEquals(0, recs.size());
+  }
+
+  /**
+   * Test changing the size of the questions.
+   */
+  @Test
+  public void testGetRecommendation_DifferentSizedResponses() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    int questionSize = rand.nextInt(1, 35);
+    List<Integer> userResponses = new ArrayList<>();
+    for (int j = 0; j < questionSize; j++) {
+      userResponses.add(rand.nextInt(1, 11));
+    }
+    Response userResponse = new Response(testUser.getId(), userResponses);
+
+    List<Response> allResponses = new ArrayList<>();
+    for (int i = 0; i < 20; i++) {
+      List<Integer> ans = new ArrayList<>();
+      for (int j = 0; j < questionSize; j++) {
+        ans.add(rand.nextInt(1, 11));
+      }
+      allResponses.add(new Response(1L + i, ans));
+    }
+
+    allResponses.add(new Response(1L + questionSize, userResponses));
+
+
+    List<Long> recs = recommender.getRecommendation(userResponse,
+            allResponses, questionSize);
+
+    assertTrue(recs.size() > 1);
+    assertTrue(recs.contains(1L + questionSize));
   }
 
 

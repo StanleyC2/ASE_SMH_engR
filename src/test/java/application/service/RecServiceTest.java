@@ -9,17 +9,17 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import application.model.Response;
-import application.model.RoommateRecommender;
+import application.model.Recommender;
 import application.model.User;
 import application.repository.ResponseRepository;
 import application.repository.UserRepository;
 import application.security.JwtService;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 class RecServiceTest {
@@ -34,7 +34,7 @@ class RecServiceTest {
   private JwtService jwtService;
 
   @Mock
-  private RoommateRecommender roommateRecommender;
+  private Recommender recommender;
 
   @InjectMocks
   private RecService recService;
@@ -53,7 +53,7 @@ class RecServiceTest {
     user.setId(id);
     user.setUsername(username);
     Response response = new Response();
-    response.setId(id);
+    response.setUserId(id);
     response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
     when(jwtService.validateToken(token)).thenReturn(true);
@@ -66,7 +66,7 @@ class RecServiceTest {
             recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
 
     assertNotNull(result);
-    assertEquals(user.getId(), result.getId());
+    assertEquals(user.getId(), result.getUserId());
     assertEquals(Arrays.asList(1,2,3,4,5,6,7,8), result.getResponseValues());
   }
 
@@ -82,7 +82,7 @@ class RecServiceTest {
     user.setId(id);
     user.setUsername(username);
     Response response = new Response();
-    response.setId(id);
+    response.setUserId(id);
     response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
     when(jwtService.validateToken(token)).thenReturn(true);
@@ -95,14 +95,14 @@ class RecServiceTest {
             recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
 
     assertNotNull(result);
-    assertEquals(user.getId(), result.getId());
+    assertEquals(user.getId(), result.getUserId());
     assertEquals(Arrays.asList(1,2,3,4,5,6,7,8), result.getResponseValues());
 
     Response result2 =
             recService.addOrReplaceResponse(token, Arrays.asList(5,5,7,4,5,8,9,1));
 
     assertNotNull(result2);
-    assertEquals(user.getId(), result2.getId());
+    assertEquals(user.getId(), result2.getUserId());
     assertEquals(Arrays.asList(5,5,7,4,5,8,9,1), result2.getResponseValues());
   }
 
@@ -115,12 +115,31 @@ class RecServiceTest {
     user.setId(id);
     user.setUsername(username);
     Response response = new Response();
-    response.setId(id);
+    response.setUserId(id);
     response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
     when(jwtService.validateToken(token)).thenReturn(false);
 
     assertThrows(RuntimeException.class, ()
+            -> recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8)));
+  }
+
+  @Test
+  void testAddNewResponse_CantFindUser() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 1L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+    Response response = new Response();
+    response.setUserId(id);
+    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+
+    when(jwtService.validateToken(token)).thenReturn(true);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+    assertThrows(NoSuchElementException.class, ()
             -> recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8)));
   }
 
@@ -133,7 +152,7 @@ class RecServiceTest {
     user.setId(id);
     user.setUsername(username);
     Response response = new Response();
-    response.setId(id);
+    response.setUserId(id);
     response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
 
     List<Response> dummyList = List.of(response);
@@ -158,13 +177,50 @@ class RecServiceTest {
     when(responseRepository.existsById(id)).thenReturn(true);
     when(responseRepository.getResponseByUserId(id)).thenReturn(Optional.of(response));
     when(responseRepository.findAll()).thenReturn(dummyList);
-    when(roommateRecommender.getRecommendation(response, dummyList)).thenReturn(ids);
+    when(recommender.getRecommendation(response, dummyList, 8)).thenReturn(ids);
 
     List<User> result =
             recService.recommendRoommates(token);
 
     assertNotNull(result);
     assertEquals(users, result);
+  }
+
+  @Test
+  void testRecommendation_FromInvalidToken() {
+    String token = "invalidToken";
+    String username = "testuser";
+    Long id = 10L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+
+
+    when(jwtService.validateToken(token)).thenReturn(false);
+    when(jwtService.extractUsername(token)).thenReturn(username);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+    assertThrows(RuntimeException.class, ()
+            -> recService.recommendRoommates(token));
+  }
+
+  @Test
+  void testRecommendation_NoPreviousResponse() {
+    String token = "validToken";
+    String username = "testuser";
+    Long id = 10L;
+    User user = new User();
+    user.setId(id);
+    user.setUsername(username);
+
+    when(jwtService.validateToken(token)).thenReturn(true);
+    when(jwtService.extractUsername(token)).thenReturn(username);
+    when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(responseRepository.existsById(id)).thenReturn(false);
+
+
+    assertThrows(NoSuchElementException.class, ()
+            -> recService.recommendRoommates(token));
   }
 
 
