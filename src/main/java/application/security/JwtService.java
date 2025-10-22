@@ -29,7 +29,7 @@ public class JwtService {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
-                .signWith(secret_key)
+                .signWith(secretKey)
                 .compact();
     }
 

@@ -1,55 +1,72 @@
-must use 
+ASE_SMH_engR
 
-Java 17
-Maven 3.9+
+**_Maxim - notes:_**
 
-run these
+make sure to have java 17, maven 3.8+ and git:
+```
+java -version
+mvn -version
+git --version
+```
+Set up!!!
+1. **Clone the repository:**
 
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+````
+git clone <your-git-repo-url>
+cd ASE_SMH_engR
+````
 
-build:
+2. **Build the project using Maven**
+```
+./mvnw clean install
+```
+
+3. **Run the service locally, default is localhost 80 80**
+
+```
+/mvnw spring-boot:run
+```
+
+Auth endpoints
+
+```
+
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
+
+``` 
+
+should return 
+
+```ey_____ some jwt token```
 
 
-mvn clean compile
+incorrect log in:
 
-run:
-mvn spring-boot:run
+```
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "user",
+    "password": "wrongpass"
+  }
+```
 
+response should be "Invalid username or password
+"
 
-seeded DB
+for next people using JWT_TOKEN as the auth for protected endpoints
 
-Default Users
+```
 
-The database is seeded with two users (only if empty):
+curl -X GET http://localhost:8080/api/protected \
+  -H "Authorization: Bearer <JWT_TOKEN>"```
+```
 
-Username	Password	Role
-admin	admin123	ROLE_ADMIN
-user	user123	ROLE_USER
+Testing run: ```./mvnw test```
 
-
-Endpoints
-
-POST /auth/register — Register a new user
-Request body (JSON):
-
-{
-"username": "example",
-"password": "examplePass",
-"email": "example@email.com",
-"role": "ROLE_USER"
-}
-
-
-POST /auth/login — Login and receive JWT token
-Request body (JSON):
-
-{
-"username": "example",
-"password": "examplePass"
-}
-
-Notes
-
-Passwords are hashed before storage.
-H2 console available at /h2-console (if enabled).
-JWT tokens required for future secured endpoints.
+Style check: ```./mvnw checkstyle:check```
