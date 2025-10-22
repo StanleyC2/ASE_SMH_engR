@@ -1,24 +1,44 @@
-# Compiled class file
+# -------------------------
+# Java build artifacts
+# -------------------------
+target/
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
 
-# virtual machine crash logs
+# Maven
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# -------------------------
+# IDE files (IntelliJ)
+# -------------------------
+.idea/
+*.iml
+*.iws
+out/
+
+# -------------------------
+# Logs
+# -------------------------
+*.log
 hs_err_pid*
-replay_pid*
+
+# -------------------------
+# Checkstyle, PMD, Spotless, other code quality
+# -------------------------
+checkstyle-*.xml
+checkstyle-result.xml
+cpd.xml
+spotless-index
+pmd.xml
