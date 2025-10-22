@@ -1,9 +1,0 @@
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/ProjectApplication.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/service/AuthService.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/model/User.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/security/JwtFilter.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/repository/UserRepository.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/controller/AuthController.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/security/SecurityConfig.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/security/JwtService.java
-/Users/maxkoretsky/Desktop/school/coms4156/ASE_SMH_engR/src/main/java/application/service/DatabaseSeeder.java
