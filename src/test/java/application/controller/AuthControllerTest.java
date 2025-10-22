@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import application.model.User;
 import application.service.AuthService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -61,4 +62,5 @@ class AuthControllerTest {
     assertEquals("mockJwtToken", response.getBody());
     verify(authService, times(1)).login(loginUser);
   }
+
 }
