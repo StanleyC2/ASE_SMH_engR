@@ -9,12 +9,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ProjectApplication {
 
-  /**
-   * Main method to launch the Spring Boot application.
-   *
-   * @param args command-line arguments
-   */
-  public static void main(String[] args) {
-    SpringApplication.run(ProjectApplication.class, args);
-  }
+    /**
+     * Main method to launch the Spring Boot application.
+     *
+     * @param args command-line arguments
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(ProjectApplication.class, args);
+    }
 }

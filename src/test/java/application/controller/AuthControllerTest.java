@@ -1,5 +1,8 @@
 package application.controller;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
 import application.model.User;
 import application.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,9 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 
 class AuthControllerTest {
 
