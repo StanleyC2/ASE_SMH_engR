@@ -58,12 +58,23 @@ public class RecService {
      * @param token The token of user who has these responses.
      * @param answers The responses to the questions in numerical representation (1-10).
      * @return The user's response.
-     * @throws IllegalArgumentException If the token is invalid.
+     * @throws RuntimeException If the token is invalid.
      * @throws NoSuchElementException If the user was not found.
+     * @throws IllegalArgumentException If the provided answers are not in the specified format.
      */
     public Response addOrReplaceResponse(String token, List<Integer> answers) {
         final User user = getUserFromToken(token);
         final Long id = user.getId();
+
+        if (answers.size() != 8) {
+            throw new IllegalArgumentException("Answer size must be 8");
+        }
+
+        for (Integer answer : answers) {
+            if (answer < 1 || answer > 10) {
+                throw new IllegalArgumentException("Each Answer must be between 1 and 10");
+            }
+        }
 
         final Response response =
               responseRepository.findById(id).orElse(new Response());
@@ -74,7 +85,17 @@ public class RecService {
         return responseRepository.save(response);
     }
 
-
+    /**
+     * Recommends up to 5 roommates that are the most similar to the personality responses the
+     * user whose has the given token has provided before.
+     * @param token The user's token they got after they logged in.
+     * @return A List of Users who the user who requested list is recommended to be roommates with.
+     * @throws NoSuchElementException If the user has not provided a response before calling this
+     * function or if a User cannot be found despite the token being valid.
+     * @throws RuntimeException If the provided token is expired/invalid.
+     * @throws IllegalArgumentException If the previously provided responses are invalid for this
+     * operation.
+     */
     public List<User> recommendRoommates(String token) {
         final List<Response> allResponses = responseRepository.findAll();
 

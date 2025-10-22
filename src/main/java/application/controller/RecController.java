@@ -28,6 +28,8 @@ public class RecController {
             return ResponseEntity.ok(response);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
