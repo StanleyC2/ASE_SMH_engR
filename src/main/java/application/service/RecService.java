@@ -55,16 +55,19 @@ public class RecService {
      * 7. I prefer a quiet, calm home environment over a lively or social one
      * 8. I’m more of a morning person than a night owl
      * Then stores the user and their responses.
-     * @param token The token of user who has these responses.
-     * @param answers The responses to the questions in numerical representation (1-10).
+     * @param givenResponse The inputted response.
      * @return The user's response.
-     * @throws RuntimeException If the token is invalid.
      * @throws NoSuchElementException If the user was not found.
      * @throws IllegalArgumentException If the provided answers are not in the specified format.
      */
-    public Response addOrReplaceResponse(String token, List<Integer> answers) {
-        final User user = getUserFromToken(token);
-        final Long id = user.getId();
+    public Response addOrReplaceResponse(Response givenResponse) {
+
+        final List<Integer> answers = givenResponse.getResponseValues();
+        final long userId = givenResponse.getUserId();
+
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User not found");
+        }
 
         if (answers.size() != 8) {
             throw new IllegalArgumentException("Answer size must be 8");
@@ -77,9 +80,9 @@ public class RecService {
         }
 
         final Response response =
-              responseRepository.findById(id).orElse(new Response());
+              responseRepository.findById(userId).orElse(new Response());
 
-        response.setUserId(id);
+        response.setUserId(userId);
         response.setResponseValues(answers);
 
         return responseRepository.save(response);
@@ -88,24 +91,21 @@ public class RecService {
     /**
      * Recommends up to 5 roommates that are the most similar to the personality responses the
      * user whose has the given token has provided before.
-     * @param token The user's token they got after they logged in.
+     * @param userId The user to get recommendations for.
      * @return A List of Users who the user who requested list is recommended to be roommates with.
      * @throws NoSuchElementException If the user has not provided a response before calling this
      * function or if a User cannot be found despite the token being valid.
-     * @throws RuntimeException If the provided token is expired/invalid.
      * @throws IllegalArgumentException If the previously provided responses are invalid for this
      * operation.
      */
-    public List<User> recommendRoommates(String token) {
+    public List<User> recommendRoommates(long userId) {
         final List<Response> allResponses = responseRepository.findAll();
 
-        final User user = getUserFromToken(token);
-
-        if (!responseRepository.existsById(user.getId())) {
+        if (!responseRepository.existsById(userId)) {
             throw new NoSuchElementException("User has not provided a Response");
         }
 
-        final Response response = responseRepository.getResponseByUserId(user.getId()).get();
+        final Response response = responseRepository.getResponseByUserId(userId).get();
 
         final List<Long> userIds = recommender.getRecommendation(response, allResponses, 8);
 

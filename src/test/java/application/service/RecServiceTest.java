@@ -56,16 +56,15 @@ class RecServiceTest {
     user.setUsername(username);
     Response response = new Response();
     response.setUserId(id);
-    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+    response.setResponseValues(List.of(1,2,3,4,5,6,7,8));
 
-    when(jwtService.validateToken(token)).thenReturn(true);
-    when(jwtService.extractUsername(token)).thenReturn(username);
     when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(userRepository.existsById(id)).thenReturn(true);
     when(responseRepository.findById(id)).thenReturn(Optional.of(response));
     when(responseRepository.save(response)).thenReturn(response);
 
     Response result =
-            recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
+            recService.addOrReplaceResponse(response);
 
     assertNotNull(result);
     assertEquals(user.getId(), result.getUserId());
@@ -85,46 +84,30 @@ class RecServiceTest {
     user.setUsername(username);
     Response response = new Response();
     response.setUserId(id);
-    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
+    response.setResponseValues(List.of(1,2,3,4,5,6,7,8));
 
-    when(jwtService.validateToken(token)).thenReturn(true);
-    when(jwtService.extractUsername(token)).thenReturn(username);
     when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+    when(userRepository.existsById(id)).thenReturn(true);
     when(responseRepository.findById(id)).thenReturn(Optional.of(response));
     when(responseRepository.save(response)).thenReturn(response);
 
     Response result =
-            recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8));
+            recService.addOrReplaceResponse(response);
 
     assertNotNull(result);
     assertEquals(user.getId(), result.getUserId());
     assertEquals(Arrays.asList(1,2,3,4,5,6,7,8), result.getResponseValues());
 
+    response = new Response(user.getId(), Arrays.asList(5,5,7,4,5,8,9,1));
+
     Response result2 =
-            recService.addOrReplaceResponse(token, Arrays.asList(5,5,7,4,5,8,9,1));
+            recService.addOrReplaceResponse(response);
 
     assertNotNull(result2);
     assertEquals(user.getId(), result2.getUserId());
     assertEquals(Arrays.asList(5,5,7,4,5,8,9,1), result2.getResponseValues());
   }
 
-  @Test
-  void testAddNewResponse_FromInvalidToken() {
-    String token = "validToken";
-    String username = "testuser";
-    Long id = 1L;
-    User user = new User();
-    user.setId(id);
-    user.setUsername(username);
-    Response response = new Response();
-    response.setUserId(id);
-    response.setResponseValues(List.of(8, 3, 4, 5, 9, 2, 7, 1));
-
-    when(jwtService.validateToken(token)).thenReturn(false);
-
-    assertThrows(RuntimeException.class, ()
-            -> recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8)));
-  }
 
   @Test
   void testAddNewResponse_CantFindUser() {
@@ -142,7 +125,7 @@ class RecServiceTest {
     when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
     assertThrows(NoSuchElementException.class, ()
-            -> recService.addOrReplaceResponse(token, Arrays.asList(1,2,3,4,5,6,7,8)));
+            -> recService.addOrReplaceResponse(response));
   }
 
   @Test
@@ -182,7 +165,7 @@ class RecServiceTest {
     when(recommender.getRecommendation(response, dummyList, 8)).thenReturn(ids);
 
     List<User> result =
-            recService.recommendRoommates(token);
+            recService.recommendRoommates(user.getId());
 
     assertNotNull(result);
     assertEquals(users, result);
@@ -203,7 +186,7 @@ class RecServiceTest {
     when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
     assertThrows(RuntimeException.class, ()
-            -> recService.recommendRoommates(token));
+            -> recService.recommendRoommates(user.getId()));
   }
 
   @Test
@@ -222,7 +205,7 @@ class RecServiceTest {
 
 
     assertThrows(NoSuchElementException.class, ()
-            -> recService.recommendRoommates(token));
+            -> recService.recommendRoommates(user.getId()));
   }
 
 

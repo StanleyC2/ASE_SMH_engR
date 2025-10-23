@@ -1,0 +1,24 @@
+{
+  "responses": [
+    { "userId": 1, "responseValue": [8, 2, 10, 3, 6, 1, 5, 9] },
+    { "userId": 2, "responseValue": [4, 7, 3, 9, 2, 8, 10, 5] },
+    { "userId": 3, "responseValue": [1, 6, 5, 7, 4, 10, 2, 8] },
+    { "userId": 4, "responseValue": [10, 3, 7, 9, 1, 5, 4, 6] },
+    { "userId": 5, "responseValue": [5, 8, 4, 2, 7, 9, 10, 3] },
+    { "userId": 6, "responseValue": [9, 1, 8, 10, 5, 4, 6, 2] },
+    { "userId": 7, "responseValue": [3, 5, 6, 8, 9, 2, 7, 10] },
+    { "userId": 8, "responseValue": [4, 10, 3, 5, 6, 8, 9, 1] },
+    { "userId": 9, "responseValue": [2, 7, 1, 4, 8, 5, 10, 9] },
+    { "userId": 10, "responseValue": [8, 6, 9, 5, 3, 2, 10, 1] },
+    { "userId": 11, "responseValue": [7, 3, 5, 10, 4, 6, 8, 2] },
+    { "userId": 12, "responseValue": [9, 8, 2, 4, 7, 3, 1, 10] },
+    { "userId": 13, "responseValue": [6, 1, 9, 10, 5, 8, 4, 7] },
+    { "userId": 14, "responseValue": [3, 7, 8, 5, 9, 2, 10, 4] },
+    { "userId": 15, "responseValue": [1, 9, 5, 6, 7, 10, 8, 3] },
+    { "userId": 16, "responseValue": [10, 4, 7, 3, 6, 2, 8, 9] },
+    { "userId": 17, "responseValue": [8, 10, 2, 9, 1, 5, 7, 6] },
+    { "userId": 18, "responseValue": [5, 9, 3, 7, 10, 8, 4, 1] },
+    { "userId": 19, "responseValue": [2, 6, 8, 10, 3, 4, 9, 5] },
+    { "userId": 20, "responseValue": [9, 5, 10, 7, 1, 6, 3, 8] }
+  ]
+}

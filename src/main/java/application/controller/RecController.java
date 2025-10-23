@@ -21,31 +21,27 @@ public class RecController {
     private RecService recService;
 
     @PostMapping("/roommates/personality")
-    public ResponseEntity<?> getResponses(@RequestBody String token,
-                                          @RequestBody List<Integer> responses) {
+    public ResponseEntity<?> getResponses(@RequestBody Response response) {
         try {
-            final Response response = recService.addOrReplaceResponse(token, responses);
-            return ResponseEntity.ok(response);
+
+            final Response addedResponse = recService.addOrReplaceResponse(response);
+            return ResponseEntity.ok(addedResponse);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
         }
     }
 
     @PostMapping("/roommates/recommendation")
-    public ResponseEntity<?> getRoommateRecommendations(@RequestBody String token) {
+    public ResponseEntity<?> getRoommateRecommendations(@RequestBody long user) {
         try {
-            final List<User> response = recService.recommendRoommates(token);
+            final List<User> response = recService.recommendRoommates(user);
             return ResponseEntity.ok(response);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(400).body(e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(e.getMessage());
         }
     }
 }
