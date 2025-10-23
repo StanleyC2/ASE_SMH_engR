@@ -24,7 +24,7 @@ cd ASE_SMH_engR
 3. **Run the service locally, default is localhost 80 80**
 
 ```
-/mvnw spring-boot:run
+./mvnw spring-boot:run
 ```
 
 Auth endpoints
