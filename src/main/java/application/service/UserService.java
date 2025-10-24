@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserService {
 
+
     @Autowired
     private UserRepository userRepository;
 
@@ -21,7 +22,7 @@ public class UserService {
         }
 
         // Build a new User entity (using Lombok builder)
-        User newUser = User.builder()
+        final User newUser = User.builder()
                 .username(username)
                 .email(email)
                 .password(rawPassword)

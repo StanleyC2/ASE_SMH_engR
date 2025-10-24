@@ -20,24 +20,35 @@ public class UserController {
 
     @PostMapping("/renter/new")
     public ResponseEntity<?> registerRenter(@RequestBody User request) {
-        User renter = userService.registerUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getRole()
-        );
-        return ResponseEntity.ok(renter);
+        try {
+            final User renter = userService.registerUser(
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRole()
+            );
+            return ResponseEntity.ok(renter);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/agent/new")
     public ResponseEntity<?> registerAgent(@RequestBody User request) {
-        User agent = userService.registerUser(
-                request.getUsername(),
-                request.getEmail(),
-                request.getPassword(),
-                request.getRole()
-        );
-        return ResponseEntity.ok(agent);
+        try {
+            final User agent = userService.registerUser(
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword(),
+                    request.getRole()
+            );
+            return ResponseEntity.ok(agent);
+        }
+        catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     @PostMapping("/{userID}/verify-email")
