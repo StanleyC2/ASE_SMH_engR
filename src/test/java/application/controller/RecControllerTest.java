@@ -49,6 +49,24 @@ class RecControllerTest {
     }
 
     @Test
+    void testGetResponseEndpoint_All1() {
+        long userId = 1L;
+        List<Integer> responses = List.of(1, 1, 1, 1, 1, 1, 1, 1);
+        Response userResponse = new Response(userId, responses);
+
+        when(recService.addOrReplaceResponse(userResponse)).thenReturn(new Response(1L,
+                responses));
+
+        ResponseEntity<?> response = recController.getResponses(userResponse);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        Response result = (Response) response.getBody();
+        assertNotNull(result);
+        assertEquals(1L, result.getUserId());
+        assertEquals(responses, result.getResponseValues());
+    }
+
+    @Test
     void testGetResponseEndpoint_InvalidResponseLength() {
         long userId = 1L;
         List<Integer> responses = List.of(1, 5, 7, 1, 8);
@@ -102,7 +120,26 @@ class RecControllerTest {
     }
 
     @Test
-    void testGetRecommendation_BadToken() {
+    void testGetRecommendation_UserId0() {
+        long userId = 0L;
+        List<User> recommendations = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            recommendations.add(new User());
+        }
+
+        when(recService.recommendRoommates(userId)).thenReturn(recommendations);
+
+        ResponseEntity<?> response = recController.getRoommateRecommendations(userId);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        List<User> result = (List<User>) response.getBody();
+        assertNotNull(result);
+        assertEquals(5, result.size());
+        assertEquals(recommendations, result);
+    }
+
+    @Test
+    void testGetRecommendation_NoSuchUser() {
         long userId = 1L;
 
         when(recService.recommendRoommates(userId))
@@ -117,7 +154,7 @@ class RecControllerTest {
     }
 
     @Test
-    void testGetRecommendation_BadResponse() {
+    void testGetRecommendation_BadResponseGiven() {
         long userId = 1L;
 
         when(recService.recommendRoommates(userId))

@@ -89,6 +89,27 @@ class RoommateRecommenderTest {
   }
 
   /**
+   * Test getting the recommendation for a user.
+   */
+  @Test
+  public void testGetRecommendation_All1() {
+    User testUser = new User();
+    testUser.setUsername("test user");
+    Response userResponse = new Response(testUser.getId(), List.of(1,1,1,1,1,1,1,1));
+
+    List<Long> recommendation = recommender.getRecommendation(userResponse,
+            responses.values().stream().toList(), 8);
+
+
+    assertEquals(5, recommendation.size());
+    assertTrue(recommendation.contains(4L));
+    assertTrue(recommendation.contains(13L));
+    assertTrue(recommendation.contains(18L));
+    assertTrue(recommendation.contains(8L));
+    assertTrue(recommendation.contains(10L));
+  }
+
+  /**
    * Test getting the recommendation for a user response that does not match the required number
    * of answers.
    */
