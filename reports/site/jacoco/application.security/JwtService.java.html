@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ASE_SMH_engR</a> &gt; <a href="index.source.html" class="el_package">application.security</a> &gt; <span class="el_source">JwtService.java</span></div><h1>JwtService.java</h1><pre class="source lang-java linenums">package application.security;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import java.util.Date;
+import javax.crypto.SecretKey;
+import org.springframework.stereotype.Service;
+
+/**
+ * Service for generating and validating JWT tokens securely.
+ */
+@Service
+<span class="fc" id="L14">public class JwtService {</span>
+
+    // Use a secure randomly generated key for HS256
+<span class="fc" id="L17">    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);</span>
+
+    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+    /**
+     * Generate a JWT token for a given username.
+     *
+     * @param username the username
+     * @return JWT token string
+     */
+    public String generateToken(String username) {
+<span class="fc" id="L28">        return Jwts.builder()</span>
+<span class="fc" id="L29">                .setSubject(username)</span>
+<span class="fc" id="L30">                .setIssuedAt(new Date())</span>
+<span class="fc" id="L31">                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))</span>
+<span class="fc" id="L32">                .signWith(secretKey)</span>
+<span class="fc" id="L33">                .compact();</span>
+    }
+
+    /**
+     * Extract username from JWT token.
+     *
+     * @param token JWT token string
+     * @return username
+     */
+    public String extractUsername(String token) {
+<span class="nc" id="L43">        return Jwts.parserBuilder()</span>
+<span class="nc" id="L44">                .setSigningKey(secretKey)</span>
+<span class="nc" id="L45">                .build()</span>
+<span class="nc" id="L46">                .parseClaimsJws(token)</span>
+<span class="nc" id="L47">                .getBody()</span>
+<span class="nc" id="L48">                .getSubject();</span>
+    }
+
+    /**
+     * Validate JWT token expiration and signature.
+     *
+     * @param token JWT token string
+     * @return true if valid, false otherwise
+     */
+    public boolean validateToken(String token) {
+        try {
+<span class="nc" id="L59">            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);</span>
+<span class="nc" id="L60">            return true;</span>
+<span class="nc" id="L61">        } catch (Exception e) {</span>
+<span class="nc" id="L62">            return false;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

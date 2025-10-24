@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoommateController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ASE_SMH_engR</a> &gt; <a href="index.source.html" class="el_package">application.controller</a> &gt; <span class="el_source">RoommateController.java</span></div><h1>RoommateController.java</h1><pre class="source lang-java linenums">package application.controller;
+
+import application.model.RoommateMatch;
+import application.model.RoommatePreference;
+import application.service.RoommateService;
+import java.security.Principal;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Endpoints for roommate matching.
+ */
+@RestController
+@RequestMapping(&quot;/roommates&quot;)
+@RequiredArgsConstructor
+public class RoommateController {
+
+    private final RoommateService roommateService;
+
+    /**
+     * Creates or updates roommate preferences.
+     *
+     * @param pref the preference payload
+     * @param principal current user principal (may be null during demo)
+     * @return 200 OK with the saved preference
+     */
+    @PostMapping(&quot;/new&quot;)
+    public ResponseEntity&lt;RoommatePreference&gt; createOrUpdate(
+            @RequestBody RoommatePreference pref,
+            Principal principal
+    ) {
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        final String username = principal != null ? principal.getName() : &quot;admin&quot;;</span>
+<span class="fc" id="L35">        final RoommatePreference saved = roommateService.saveOrUpdate(username, pref);</span>
+<span class="fc" id="L36">        return ResponseEntity.ok(saved);</span>
+    }
+
+    /**
+     * Return all users currently looking for roommates.
+     *
+     * @return 200 OK with list
+     */
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;List&lt;RoommatePreference&gt;&gt; search() {
+<span class="fc" id="L46">        return ResponseEntity.ok(roommateService.listActive());</span>
+    }
+
+    @PostMapping(&quot;/{matchId}/accept&quot;)
+    public ResponseEntity&lt;RoommateMatch&gt; accept(@PathVariable Long matchId) {
+<span class="fc" id="L51">        return ResponseEntity.ok(roommateService.acceptMatch(matchId));</span>
+    }
+
+    @PostMapping(&quot;/{matchId}/reject&quot;)
+    public ResponseEntity&lt;RoommateMatch&gt; reject(@PathVariable Long matchId) {
+<span class="fc" id="L56">        return ResponseEntity.ok(roommateService.rejectMatch(matchId));</span>
+    }
+
+    @PostMapping(&quot;/request/{candidateId}&quot;)
+    public ResponseEntity&lt;RoommateMatch&gt; requestMatch(
+            @PathVariable Long candidateId,
+            @RequestParam(defaultValue = &quot;admin&quot;) String requesterUsername
+    ) {
+<span class="fc" id="L64">        return ResponseEntity.ok(roommateService.createMatchRequest(requesterUsername, candidateId));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

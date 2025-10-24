@@ -1,0 +1,17 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+ASE_SMH_engR,application,ProjectApplication,5,3,0,0,2,1,1,1,1,1
+ASE_SMH_engR,application.security,JwtService,24,26,0,0,10,8,2,2,2,2
+ASE_SMH_engR,application.security,SecurityConfig,0,36,0,0,0,9,0,5,0,5
+ASE_SMH_engR,application.security,JwtFilter,8,28,3,1,1,6,2,1,0,1
+ASE_SMH_engR,application.service,RecService,42,136,7,11,9,29,6,7,1,3
+ASE_SMH_engR,application.service,UserService,37,3,4,0,11,1,3,1,1,1
+ASE_SMH_engR,application.service,DatabaseSeeder,3,62,1,1,1,20,1,2,0,2
+ASE_SMH_engR,application.service,AuthService,3,74,2,10,1,12,2,6,0,2
+ASE_SMH_engR,application.service,RoommateService,32,148,1,3,1,37,6,6,5,5
+ASE_SMH_engR,application.model,RoommateMatch.Status,0,21,0,0,0,4,0,1,0,1
+ASE_SMH_engR,application.model,Recommender.ScoredUser,0,9,0,0,0,4,0,1,0,1
+ASE_SMH_engR,application.model,Recommender,5,185,4,18,2,33,4,13,0,6
+ASE_SMH_engR,application.controller,AuthController,0,35,0,0,0,10,0,3,0,3
+ASE_SMH_engR,application.controller,RecController,0,47,0,0,0,13,0,3,0,3
+ASE_SMH_engR,application.controller,UserController,6,42,0,0,2,16,0,4,0,4
+ASE_SMH_engR,application.controller,RoommateController,1,39,1,1,0,7,1,5,0,5
