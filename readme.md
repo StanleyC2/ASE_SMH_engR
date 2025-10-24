@@ -280,3 +280,5 @@ Run style check:
 ```
 ./mvnw checkstyle:check
 ```
+
+You can find already generated reports in the reports folder at checkstyle.html and site/index.html
