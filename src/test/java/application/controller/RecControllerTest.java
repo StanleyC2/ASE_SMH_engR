@@ -32,12 +32,14 @@ class RecControllerTest {
 
     @Test
     void testGetResponseEndpoint() {
-        String token = "validToken";
+        long userId = 1L;
         List<Integer> responses = List.of(1, 5, 7, 1, 8, 9, 8, 1);
+        Response userResponse = new Response(userId, responses);
 
-        when(recService.addOrReplaceResponse(token, responses)).thenReturn(new Response(1L, responses));
+        when(recService.addOrReplaceResponse(userResponse)).thenReturn(new Response(1L,
+                responses));
 
-        ResponseEntity<?> response = recController.getResponses(token, responses);
+        ResponseEntity<?> response = recController.getResponses(userResponse);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         Response result = (Response) response.getBody();
@@ -48,13 +50,14 @@ class RecControllerTest {
 
     @Test
     void testGetResponseEndpoint_InvalidResponseLength() {
-        String token = "validToken";
+        long userId = 1L;
         List<Integer> responses = List.of(1, 5, 7, 1, 8);
+        Response userResponse = new Response(userId, responses);
 
-        when(recService.addOrReplaceResponse(token, responses))
+        when(recService.addOrReplaceResponse(userResponse))
                 .thenThrow(new IllegalArgumentException("Answer size must be 8"));
 
-        ResponseEntity<?> response = recController.getResponses(token, responses);
+        ResponseEntity<?> response = recController.getResponses(userResponse);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         String result = (String) response.getBody();
@@ -64,13 +67,14 @@ class RecControllerTest {
 
     @Test
     void testGetResponseEndpoint_BadToken() {
-        String token = "validToken";
+        long userId = 1L;
         List<Integer> responses = List.of();
+        Response userResponse = new Response(userId, responses);
 
-        when(recService.addOrReplaceResponse(token, responses))
+        when(recService.addOrReplaceResponse(userResponse))
                 .thenThrow(new NoSuchElementException("Get this message"));
 
-        ResponseEntity<?> response = recController.getResponses(token, responses);
+        ResponseEntity<?> response = recController.getResponses(userResponse);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         String result = (String) response.getBody();
@@ -80,15 +84,15 @@ class RecControllerTest {
 
     @Test
     void testGetRecommendation() {
-        String token = "validToken";
+        long userId = 1L;
         List<User> recommendations = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             recommendations.add(new User());
         }
 
-        when(recService.recommendRoommates(token)).thenReturn(recommendations);
+        when(recService.recommendRoommates(userId)).thenReturn(recommendations);
 
-        ResponseEntity<?> response = recController.getRoommateRecommendations(token);
+        ResponseEntity<?> response = recController.getRoommateRecommendations(userId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
         List<User> result = (List<User>) response.getBody();
@@ -99,12 +103,12 @@ class RecControllerTest {
 
     @Test
     void testGetRecommendation_BadToken() {
-        String token = "validToken";
+        long userId = 1L;
 
-        when(recService.recommendRoommates(token))
+        when(recService.recommendRoommates(userId))
                 .thenThrow(new NoSuchElementException("Get this message"));
 
-        ResponseEntity<?> response = recController.getRoommateRecommendations(token);
+        ResponseEntity<?> response = recController.getRoommateRecommendations(userId);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
 
         String result = (String) response.getBody();
@@ -114,12 +118,12 @@ class RecControllerTest {
 
     @Test
     void testGetRecommendation_BadResponse() {
-        String token = "validToken";
+        long userId = 1L;
 
-        when(recService.recommendRoommates(token))
+        when(recService.recommendRoommates(userId))
                 .thenThrow(new IllegalArgumentException("Get this message"));
 
-        ResponseEntity<?> response = recController.getRoommateRecommendations(token);
+        ResponseEntity<?> response = recController.getRoommateRecommendations(userId);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         String result = (String) response.getBody();

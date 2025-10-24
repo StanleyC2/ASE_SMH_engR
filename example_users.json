@@ -1,0 +1,24 @@
+{
+  "users": [
+    { "id": 1, "username": "alice", "password": "password123", "email": "alice@example.com", "role": "ROLE_USER" },
+    { "id": 2, "username": "bob", "password": "securepass", "email": "bob@example.com", "role": "ROLE_USER" },
+    { "id": 3, "username": "charlie", "password": "charlie2025", "email": "charlie@example.com", "role": "ROLE_USER" },
+    { "id": 4, "username": "diana", "password": "mypassword", "email": "diana@example.com", "role": "ROLE_USER" },
+    { "id": 5, "username": "eve", "password": "supersecret", "email": "eve@example.com", "role": "ROLE_USER" },
+    { "id": 6, "username": "frank", "password": "frank!234", "email": "frank@example.com", "role": "ROLE_USER" },
+    { "id": 7, "username": "grace", "password": "gracePass7", "email": "grace@example.com", "role": "ROLE_USER" },
+    { "id": 8, "username": "harry", "password": "h@rry2025", "email": "harry@example.com", "role": "ROLE_USER" },
+    { "id": 9, "username": "irene", "password": "irene_pw9", "email": "irene@example.com", "role": "ROLE_USER" },
+    { "id": 10, "username": "jack", "password": "jackSecure10", "email": "jack@example.com", "role": "ROLE_USER" },
+    { "id": 11, "username": "karen", "password": "karen#11", "email": "karen@example.com", "role": "ROLE_USER" },
+    { "id": 12, "username": "leo", "password": "leoLion12", "email": "leo@example.com", "role": "ROLE_USER" },
+    { "id": 13, "username": "mia", "password": "mia_pass13", "email": "mia@example.com", "role": "ROLE_USER" },
+    { "id": 14, "username": "nate", "password": "nate.14", "email": "nate@example.com", "role": "ROLE_USER" },
+    { "id": 15, "username": "olivia", "password": "oliveTree15", "email": "olivia@example.com", "role": "ROLE_USER" },
+    { "id": 16, "username": "peter", "password": "peterPWD16", "email": "peter@example.com", "role": "ROLE_USER" },
+    { "id": 17, "username": "quinn", "password": "quinnQ17!", "email": "quinn@example.com", "role": "ROLE_USER" },
+    { "id": 18, "username": "rachel", "password": "rachel_18", "email": "rachel@example.com", "role": "ROLE_USER" },
+    { "id": 19, "username": "sam", "password": "s@mSam19", "email": "sam@example.com", "role": "ROLE_USER" },
+    { "id": 20, "username": "tina", "password": "tinaPass20", "email": "tina@example.com", "role": "ROLE_USER" }
+  ]
+}
