@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Recommender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ASE_SMH_engR</a> &gt; <a href="index.source.html" class="el_package">application.model</a> &gt; <span class="el_source">Recommender.java</span></div><h1>Recommender.java</h1><pre class="source lang-java linenums">package application.model;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import org.springframework.stereotype.Component;
+
+
+/**
+ * Recommends Roommates for a given user based on their personality traits.
+ */
+@Component
+<span class="fc" id="L14">public class Recommender {</span>
+
+    /**
+     * Checks Double equality based on epsilon.
+     * @param a The first value to check.
+     * @param b The second value to check.
+     * @return If the difference between a and b is smaller than the epsilon threshold, there are
+     * the same.
+     */
+    private boolean doubleEquality(double a, double b) {
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        return Math.abs(a - b) &lt; 1e-6;</span>
+    }
+
+    /**
+     * Calculates the cosine similarity between 2 users based on responses they have put in. Before
+     * using this function, both users have to have put in responses, otherwise a null pointer
+     * exception may be thrown.
+     * @param response1 The first user's responses.
+     * @param response2 The second user's responses..
+     * @return The cosine similarity between the 2 user's responses, the closer to 1 the more
+     * similar.
+     */
+    private double cosineSimilarity(Response response1, Response response2) {
+<span class="fc" id="L37">        double dotProduct = 0.0;</span>
+<span class="fc" id="L38">        double magnitude1 = 0.0;</span>
+<span class="fc" id="L39">        double magnitude2 = 0.0;</span>
+
+<span class="fc" id="L41">        final List&lt;Integer&gt; response1Values = response1.getResponseValues();</span>
+<span class="fc" id="L42">        final List&lt;Integer&gt; response2Values = response2.getResponseValues();</span>
+
+
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        for (int i = 0; i &lt; response1Values.size(); i++) {</span>
+<span class="fc" id="L46">            dotProduct += response1Values.get(i) * response2Values.get(i);</span>
+<span class="fc" id="L47">            magnitude1 += Math.pow(response1Values.get(i), 2);</span>
+<span class="fc" id="L48">            magnitude2 += Math.pow(response2Values.get(i), 2);</span>
+        }
+
+<span class="fc" id="L51">        magnitude1 = Math.sqrt(magnitude1);</span>
+<span class="fc" id="L52">        magnitude2 = Math.sqrt(magnitude2);</span>
+
+<span class="pc bpc" id="L54" title="2 of 4 branches missed.">        if (doubleEquality(magnitude1, 0.0) || doubleEquality(magnitude2, 0.0)) {</span>
+<span class="nc" id="L55">            return 0.0;</span>
+        }
+
+<span class="fc" id="L58">        return (dotProduct / (magnitude1 * magnitude2));</span>
+    }
+
+    private static class ScoredUser {
+        Long user;
+        double score;
+
+<span class="fc" id="L65">        public ScoredUser(Long user, double score) {</span>
+<span class="fc" id="L66">            this.user = user;</span>
+<span class="fc" id="L67">            this.score = score;</span>
+<span class="fc" id="L68">        }</span>
+    }
+
+    /**
+     * Gets a list of recommendations from the given list of all responses based on the given user
+     * response. If there were no responses for a user before, will return an empty list. This
+     * recommendation system uses Cosine similarity. If a similarity score is below .4, it will not
+     * recommend the user.
+     * @param userResponse The user to get a recommendation for.
+     * @param allResponses The responses to find recommendations from.
+     * @param expectedNumQuestion the expected number of questions there should be answers to.
+     * @return A list of recommended users, if there are not enough users to recommend all 5, it
+     * will return what it has.
+     * @throws IllegalArgumentException if the length of any of the user responses dont match the
+     * number of expected questions.
+     */
+    public List&lt;Long&gt; getRecommendation(Response userResponse,
+                                        List&lt;Response&gt; allResponses, int expectedNumQuestion) {
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (userResponse.getResponseValues().size() != expectedNumQuestion) {</span>
+<span class="fc" id="L88">            throw new IllegalArgumentException(&quot;Number of questions must be &quot; + expectedNumQuestion);</span>
+        }
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        for (Response entry : allResponses) {</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">            if (entry.getResponseValues().size() != expectedNumQuestion) {</span>
+<span class="fc" id="L93">                throw new IllegalArgumentException(&quot;Number of questions must be &quot; + expectedNumQuestion);</span>
+            }
+<span class="fc" id="L95">        }</span>
+
+<span class="fc" id="L97">        final Queue&lt;ScoredUser&gt; queue = new PriorityQueue&lt;&gt;(</span>
+<span class="fc" id="L98">                Comparator.comparingDouble(a -&gt; a.score)</span>
+        );
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        for (Response response : allResponses) {</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (response.getUserId().equals(userResponse.getUserId())) {</span>
+<span class="fc" id="L103">                continue;</span>
+            }
+<span class="fc" id="L105">            final double similarity = cosineSimilarity(userResponse, response);</span>
+
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">            if (similarity &lt; 0.4 - 1e-6) {</span>
+<span class="nc" id="L108">                continue;</span>
+            }
+
+<span class="fc" id="L111">            queue.add(new ScoredUser(response.getUserId(), similarity));</span>
+
+<span class="fc bfc" id="L113" title="All 2 branches covered.">            if (queue.size() &gt; 5) {</span>
+<span class="fc" id="L114">                queue.poll();</span>
+            }
+
+<span class="fc" id="L117">        }</span>
+
+<span class="fc" id="L119">        return queue.stream().map(u -&gt; u.user).toList();</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
