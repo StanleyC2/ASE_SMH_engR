@@ -8,8 +8,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import application.model.Response;
 import application.model.User;
 import application.service.UserService;
+import application.controller.VerificationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -138,11 +140,20 @@ public class UserControllerTest {
     @DisplayName("Should successfully respond to verify-email endpoint with 200 OK")
     void verifyEmail_Success() {
         Long userId = 12345L;
-        User request = createInputUser(null, null, null, null);
+        String token = "verification-token-test";
 
-        ResponseEntity<?> response = userController.verifyEmail(request);
+        VerificationRequest requestBody = new VerificationRequest();
+        requestBody.setVerficationToken(token);
+
+        User verifiedUser = createMockUser("verifiedUser", "RENTER");
+        verifiedUser.setEmailVerified(true);
+        verifiedUser.setVerificationToken(null);
+
+        when(userService.verifyEmail(eq(userId), eq(token))).thenReturn(verifiedUser);
+
+        ResponseEntity<?> response = userController.verifyEmail(userId, requestBody);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("To be connected to endpoint", response.getBody());
+        assertEquals("Email successfully verified for user: "+verifiedUser.getUsername(), response.getBody());
     }
 }

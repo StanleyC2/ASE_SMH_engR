@@ -4,10 +4,8 @@ import application.model.User;
 import application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import application.controller.VerificationRequest;
 
 
 @RestController
@@ -52,7 +50,14 @@ public class UserController {
     }
 
     @PostMapping("/{userID}/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestBody User request) {
-        return ResponseEntity.ok("To be connected to endpoint");
+    public ResponseEntity<?> verifyEmail(@PathVariable Long userID, @RequestBody VerificationRequest request) {
+        try {
+            final User verifiedUser = userService.verifyEmail(userID, request.getVerficationToken());
+            return ResponseEntity.ok("Email successfully verified for user: "+verifiedUser.getUsername());
+        }
+        catch (IllegalArgumentException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
 }

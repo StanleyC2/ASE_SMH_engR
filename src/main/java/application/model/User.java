@@ -46,4 +46,10 @@ public class User {
      */
     @Column(nullable = false)
     private String role;
+
+    @Column(nullable = false)
+    private boolean isEmailVerified;
+
+    @Column(nullable = true)
+    private String verificationToken;
 }
