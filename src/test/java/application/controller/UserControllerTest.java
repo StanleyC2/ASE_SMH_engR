@@ -141,7 +141,6 @@ public class UserControllerTest {
     void verifyEmail_Success() {
         Long userId = 12345L;
         String token = "verification-token-test";
-
         VerificationRequest requestBody = new VerificationRequest();
         requestBody.setVerficationToken(token);
 
@@ -155,5 +154,21 @@ public class UserControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Email successfully verified for user: "+verifiedUser.getUsername(), response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should respond to verify-email endpoint with bad request")
+    void verifyEmail_Fail(){
+        Long userId = 12345L;
+        String token = "ver-token-test";
+        VerificationRequest requestBody = new VerificationRequest();
+        requestBody.setVerficationToken(token);
+        String errorMessage = "User already verified";
+
+        when(userService.verifyEmail(eq(userId), eq(token))).thenThrow(new IllegalArgumentException(errorMessage));
+
+        ResponseEntity<?> response = userController.verifyEmail(userId, requestBody);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(errorMessage, response.getBody());
     }
 }

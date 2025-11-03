@@ -47,13 +47,13 @@ public class UserService {
      * @throws IllegalArgumentException if the user or token is invalid.
      */
     public User verifyEmail(Long userId, String token) {
-        Optional<User> userOptional = userRepository.findById(userId);
+        final Optional<User> userOptional = userRepository.findById(userId);
 
         if (userOptional.isEmpty()) {
             throw new IllegalArgumentException("User not found.");
         }
 
-        User user = userOptional.get();
+        final User user = userOptional.get();
 
         if (user.isEmailVerified()) {
             throw new IllegalArgumentException("Email is already verified.");
