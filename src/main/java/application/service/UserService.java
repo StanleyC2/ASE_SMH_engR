@@ -24,13 +24,12 @@ public class UserService {
         }
         final String verificaitonToken = UUID.randomUUID().toString();
 
-        // Build a new User entity
         final User newUser = User.builder()
                 .username(username)
                 .email(email)
                 .password(rawPassword)
-                .isEmailVerified(false) //the "switch" of verificaitonToken
-                .verificationToken(verificaitonToken) //create now to optimize performance
+                .isEmailVerified(false)
+                .verificationToken(verificaitonToken)
                 .role(role)
                 .build();
         final User savedUser = userRepository.save(newUser);
