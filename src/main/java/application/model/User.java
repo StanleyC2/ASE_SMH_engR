@@ -46,4 +46,11 @@ public class User {
      */
     @Column(nullable = false)
     private String role;
+
+    /**
+     *  ID of the user, unique userID
+     */
+    @Column(unique = true, nullable = false)
+    private String userId;
+
 }
