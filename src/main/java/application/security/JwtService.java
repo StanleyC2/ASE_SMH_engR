@@ -1,5 +1,6 @@
 package application.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -24,9 +25,10 @@ public class JwtService {
      * @param username the username
      * @return JWT token string
      */
-    public String generateToken(String username) {
+    public String generateToken(String email, String userId) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
+                .claim("userId", userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(secretKey)
@@ -40,12 +42,19 @@ public class JwtService {
      * @return username
      */
     public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return Jwts.parserBuilder().setSigningKey(secretKey).build()
+                .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    /**
+     * Extract userID from JWT token.
+     *
+     * @param token JWT token string
+     * @return userID
+     */
+    public String extractUserId(String token) {
+        return Jwts.parserBuilder().setSigningKey(secretKey).build()
+                .parseClaimsJws(token).getBody().get("userId", String.class);
     }
 
     /**
@@ -61,5 +70,13 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
