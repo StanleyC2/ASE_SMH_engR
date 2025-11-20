@@ -33,38 +33,109 @@ Default port is `localhost:8080`
 
 ## Auth Endpoints
 
+### /auth/register
+
+Registers a new user account. Takes in username, email, password, and optionally a role. The password is automatically encrypted before storage. A unique userId is generated for each user. Returns 400 if the username or email already exists.
+
+**Request:**
+```
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "john_doe",
+    "email": "john@example.com",
+    "password": "securePassword123",
+    "role": "ROLE_USER"
+  }'
+```
+
+**Response:**
+```json
+{
+  "message": "User registered",
+  "user": {
+    "userId": "john_doe1234",
+    "username": "john_doe",
+    "email": "john@example.com",
+    "role": "ROLE_USER"
+  }
+}
+```
+
+---
+
+### /auth/login
+
+Authenticates a user and returns a JWT token. Takes in username and password. Returns the token along with user details on successful authentication.
+
+**Request:**
 ```
 curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "admin",
-    "password": "admin123"
+    "username": "john_doe",
+    "password": "securePassword123"
   }'
 ```
 
-should return
-```
-ey_____ some jwt token
-```
-
-Incorrect login:
-```
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "user",
-    "password": "wrongpass"
-  }'
+**Successful Response:**
+```json
+{
+  "message": "Login successful",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "userId": "john_doe1234",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
 ```
 
-response should be `"Invalid username or password"`
-
-For next people using JWT_TOKEN as the auth for protected endpoints:
-
+**Failed Response (401):**
 ```
-curl -X GET http://localhost:8080/api/protected \
+"Invalid username or password"
+```
+
+---
+
+### /auth/jwttest
+
+Tests if a JWT token is valid and returns the remaining time until expiration. Useful for debugging authentication issues.
+
+**Request:**
+```
+curl -X GET http://localhost:8080/auth/jwttest \
   -H "Authorization: Bearer <JWT_TOKEN>"
 ```
+
+**Response:**
+```json
+{
+  "message": "JWT is valid",
+  "secondsUntilExpiration": 3540
+}
+```
+
+---
+
+## Using JWT Tokens for Protected Endpoints
+
+After logging in, you will receive a JWT token in the response. This token must be included in the `Authorization` header for all protected endpoints.
+
+**Format:**
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+**Example:**
+```
+curl -X GET http://localhost:8080/roommates/search \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+**Important Notes:**
+- The token must be prefixed with `Bearer ` (note the space after Bearer)
+- Tokens expire after a certain time period (check with `/auth/jwttest`)
+- If your token expires, you'll receive a 401 Unauthorized error and need to login again
+- Keep your JWT token secure and never share it publicly
 
 ---
 
