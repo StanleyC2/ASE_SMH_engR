@@ -56,7 +56,6 @@ public class RecIntegrationTest {
                         .username("testuser")
                         .password(passwordEncoder.encode("testpass"))
                         .email("testuser@example.com")
-                        .role("ROLE_USER")
                         .build();
         userRepository.save(testUser);
     }

@@ -26,13 +26,11 @@ public class DatabaseSeeder {
             admin.setUsername("admin");
             admin.setPassword("admin123"); // will be encoded in AuthService
             admin.setEmail("admin@example.com");
-            admin.setRole("ROLE_ADMIN");
 
             final User user = new User();
             user.setUsername("user");
             user.setPassword("user123"); // will be encoded in AuthService
             user.setEmail("user@example.com");
-            user.setRole("ROLE_USER");
 
             // Use AuthService to register users (handles password encoding)
             authService.register(admin);

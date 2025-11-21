@@ -42,7 +42,6 @@ class AuthIntegrationTest {
             .username("testuser")
             .password(passwordEncoder.encode("testpass"))
             .email("testuser@example.com")
-            .role("ROLE_USER")
             .build();
     userRepository.save(user);
   }
@@ -54,7 +53,6 @@ class AuthIntegrationTest {
             .username("newuser")
             .password("newpass")
             .email("newuser@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc
@@ -87,7 +85,6 @@ class AuthIntegrationTest {
             .username("testuser")
             .password("any")
             .email("other@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc
@@ -105,7 +102,6 @@ class AuthIntegrationTest {
             .username("anotheruser")
             .password("any")
             .email("testuser@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc

@@ -1,7 +1,6 @@
 package application.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -10,6 +9,8 @@ import static org.mockito.Mockito.when;
 
 import application.model.User;
 import application.service.UserService;
+import application.security.JwtService; // Import JwtService
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,26 +25,20 @@ public class UserControllerTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private JwtService jwtService; // Mock the new dependency
+
     @InjectMocks
     private UserController userController;
 
-    private User createMockUser(String username, String role) {
+    // Helper to create a mock user with a specific ID and Role
+    private User createMockUser(String username, String email, boolean isAgent, boolean isRenter) {
         User user = new User();
         user.setId(1L);
         user.setUsername(username);
-        user.setEmail(username + "@test.com");
-        user.setPassword("hashedPassword"); // This field should ideally be ignored in controller responses
-        user.setRole(role);
-        return user;
-    }
-
-    // Create a basic input user
-    private User createInputUser(String username, String email, String role, String password) {
-        User user = new User();
-        user.setUsername(username);
         user.setEmail(email);
-        user.setPassword(password);
-        user.setRole(role);
+        user.setAgent(isAgent);
+        user.setRenter(isRenter);
         return user;
     }
 
@@ -52,97 +47,114 @@ public class UserControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // --- Test Cases for /user/renter/new (registerRenter) ---
+    // --- Test Cases for /user/renter/new ---
 
     @Test
-    @DisplayName("Should successfully register a new Renter and return 200 OK")
+    @DisplayName("Should set is_renter to true using JWT token and return 200 OK")
     void registerRenter_Success() {
-        User inputUser = createInputUser("newRenter", "renter@example.com", "RENTER", "securePswd123");
-        User registeredUser = createMockUser("newRenter", "RENTER");
+        // 1. Arrange
+        String token = "valid.jwt.token";
+        String authHeader = "Bearer " + token;
+        String userEmail = "renter@example.com";
 
-        when(userService.registerUser(
-                eq("newRenter"),
-                eq("renter@example.com"),
-                eq("securePswd123"),
-                eq("RENTER"))
-        ).thenReturn(registeredUser);
+        // The user that the service will return after updating
+        User updatedUser = createMockUser("renterUser", userEmail, false, true);
 
-        ResponseEntity<?> response = userController.registerRenter(inputUser);
+        // Mock JwtService to extract email from token
+        when(jwtService.extractUsername(token)).thenReturn(userEmail);
 
+        // Mock UserService to find by email and update role
+        when(userService.updateRenterRoleByEmail(userEmail)).thenReturn(updatedUser);
+
+        // 2. Act
+        ResponseEntity<?> response = userController.registerRenter(authHeader);
+
+        // 3. Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        User responseUser = (User) response.getBody();
-        assertEquals("newRenter", responseUser.getUsername());
-        assertEquals("RENTER", responseUser.getRole());
+        assertEquals(updatedUser, response.getBody());
 
-        verify(userService, times(1)).registerUser(
-                eq("newRenter"),
-                eq("renter@example.com"),
-                eq("securePswd123"),
-                eq("RENTER")
-        );
+        // Verify interactions
+        verify(jwtService).extractUsername(token);
+        verify(userService).updateRenterRoleByEmail(userEmail);
     }
 
     @Test
-    @DisplayName("Should return 400 Bad Request when registering Renter with duplicate username")
-    void registerRenter_DuplicateUsername_Failure() {
-        User inputUser = createInputUser("existingUser", "unique@example.com", "RENTER", "securePswd123");
-        String errorMessage = "Username already taken";
+    @DisplayName("Should return 401 Unauthorized if Authorization header is missing or invalid")
+    void registerRenter_InvalidHeader() {
+        // 1. Arrange
+        String invalidHeader = "InvalidTokenFormat";
 
-        when(userService.registerUser(any(), any(), any(), any()))
-                .thenThrow(new IllegalArgumentException(errorMessage));
+        // 2. Act
+        ResponseEntity<?> response = userController.registerRenter(invalidHeader);
 
-        ResponseEntity<?> response = userController.registerRenter(inputUser);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains(errorMessage));
+        // 3. Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid Authorization header", response.getBody());
     }
 
-    @Test
-    @DisplayName("Should return 400 Bad Request when registering Renter with duplicate email")
-    void registerRenter_DuplicateEmail_Failure() {
-        User inputUser = createInputUser("uniqueUser", "existing@example.com", "RENTER", "securePswd123");
-        String errorMessage = "Email already registered";
-
-        when(userService.registerUser(any(), any(), any(), any()))
-                .thenThrow(new IllegalArgumentException(errorMessage));
-
-        ResponseEntity<?> response = userController.registerRenter(inputUser);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains(errorMessage));
-    }
-
-
-    // --- Test Cases for /user/agent/new (registerAgent) ---
+    // --- Test Cases for /user/agent/new ---
 
     @Test
-    @DisplayName("Should successfully register a new Agent and return 200 OK")
+    @DisplayName("Should set is_agent to true using JWT token and return 200 OK")
     void registerAgent_Success() {
-        User inputUser = createInputUser("newAgent", "agent@example.com", "AGENT", "securePswd123");
-        User registeredUser = createMockUser("newAgent", "AGENT");
+        // 1. Arrange
+        String token = "valid.jwt.token";
+        String authHeader = "Bearer " + token;
+        String userEmail = "agent@example.com";
 
-        when(userService.registerUser(any(), any(), any(), eq("AGENT"))).thenReturn(registeredUser);
+        User updatedUser = createMockUser("agentUser", userEmail, true, false);
 
-        ResponseEntity<?> response = userController.registerAgent(inputUser);
+        when(jwtService.extractUsername(token)).thenReturn(userEmail);
+        when(userService.updateAgentRoleByEmail(userEmail)).thenReturn(updatedUser);
 
+        // 2. Act
+        ResponseEntity<?> response = userController.registerAgent(authHeader);
+
+        // 3. Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        User responseUser = (User) response.getBody();
-        assertEquals("newAgent", responseUser.getUsername());
-        assertEquals("AGENT", responseUser.getRole());
+        assertEquals(updatedUser, response.getBody());
 
-        verify(userService, times(1)).registerUser(any(), any(), any(), eq("AGENT"));
+        verify(userService, times(1)).updateAgentRoleByEmail(userEmail);
     }
 
     // --- Test Cases for /{userID}/verify-email (verifyEmail) ---
+    // These remain mostly unchanged as they rely on userID/Token, not JWT
+
     @Test
     @DisplayName("Should successfully respond to verify-email endpoint with 200 OK")
     void verifyEmail_Success() {
         Long userId = 12345L;
-        User request = createInputUser(null, null, null, null);
+        String token = "verification-token-test";
+        VerificationRequest requestBody = new VerificationRequest();
+        requestBody.setVerficationToken(token);
 
-        ResponseEntity<?> response = userController.verifyEmail(request);
+        User verifiedUser = createMockUser("verifiedUser", "verified@test.com", false, false);
+        verifiedUser.setEmailVerified(true);
+        verifiedUser.setVerificationToken(null);
+
+        when(userService.verifyEmail(eq(userId), eq(token))).thenReturn(verifiedUser);
+
+        ResponseEntity<?> response = userController.verifyEmail(userId, requestBody);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("To be connected to endpoint", response.getBody());
+        // Note: Checking strictly for the message string returned by the controller
+        assertTrue(response.getBody().toString().contains("Email successfully verified"));
+    }
+
+    @Test
+    @DisplayName("Should respond to verify-email endpoint with bad request")
+    void verifyEmail_Fail(){
+        Long userId = 12345L;
+        String token = "ver-token-test";
+        VerificationRequest requestBody = new VerificationRequest();
+        requestBody.setVerficationToken(token);
+        String errorMessage = "User already verified";
+
+        when(userService.verifyEmail(eq(userId), eq(token))).thenThrow(new IllegalArgumentException(errorMessage));
+
+        ResponseEntity<?> response = userController.verifyEmail(userId, requestBody);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(errorMessage, response.getBody());
     }
 }
