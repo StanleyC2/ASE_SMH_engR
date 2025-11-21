@@ -84,9 +84,7 @@ public class UserService {
             throw new IllegalArgumentException("Email is already verified.");
         }
 
-        // Check if the provided token matches the stored token
         if (user.getVerificationToken() != null && user.getVerificationToken().equals(token)) {
-            // Update the verification status and clear the token
             user.setEmailVerified(true);
             user.setVerificationToken(null);
             return userRepository.save(user);

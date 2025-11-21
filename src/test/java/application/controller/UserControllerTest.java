@@ -1,7 +1,6 @@
 package application.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import application.model.User;
 import application.service.UserService;
-import application.security.JwtService; // Import JwtService
+import application.security.JwtService;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,7 +25,7 @@ public class UserControllerTest {
     private UserService userService;
 
     @Mock
-    private JwtService jwtService; // Mock the new dependency
+    private JwtService jwtService;
 
     @InjectMocks
     private UserController userController;
@@ -66,14 +65,11 @@ public class UserControllerTest {
         // Mock UserService to find by email and update role
         when(userService.updateRenterRoleByEmail(userEmail)).thenReturn(updatedUser);
 
-        // 2. Act
         ResponseEntity<?> response = userController.registerRenter(authHeader);
 
-        // 3. Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updatedUser, response.getBody());
 
-        // Verify interactions
         verify(jwtService).extractUsername(token);
         verify(userService).updateRenterRoleByEmail(userEmail);
     }
@@ -81,13 +77,10 @@ public class UserControllerTest {
     @Test
     @DisplayName("Should return 401 Unauthorized if Authorization header is missing or invalid")
     void registerRenter_InvalidHeader() {
-        // 1. Arrange
         String invalidHeader = "InvalidTokenFormat";
 
-        // 2. Act
         ResponseEntity<?> response = userController.registerRenter(invalidHeader);
 
-        // 3. Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertEquals("Missing or invalid Authorization header", response.getBody());
     }
@@ -97,7 +90,6 @@ public class UserControllerTest {
     @Test
     @DisplayName("Should set is_agent to true using JWT token and return 200 OK")
     void registerAgent_Success() {
-        // 1. Arrange
         String token = "valid.jwt.token";
         String authHeader = "Bearer " + token;
         String userEmail = "agent@example.com";
@@ -107,10 +99,8 @@ public class UserControllerTest {
         when(jwtService.extractUsername(token)).thenReturn(userEmail);
         when(userService.updateAgentRoleByEmail(userEmail)).thenReturn(updatedUser);
 
-        // 2. Act
         ResponseEntity<?> response = userController.registerAgent(authHeader);
 
-        // 3. Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updatedUser, response.getBody());
 
@@ -118,7 +108,6 @@ public class UserControllerTest {
     }
 
     // --- Test Cases for /{userID}/verify-email (verifyEmail) ---
-    // These remain mostly unchanged as they rely on userID/Token, not JWT
 
     @Test
     @DisplayName("Should successfully respond to verify-email endpoint with 200 OK")
@@ -137,7 +126,6 @@ public class UserControllerTest {
         ResponseEntity<?> response = userController.verifyEmail(userId, requestBody);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        // Note: Checking strictly for the message string returned by the controller
         assertTrue(response.getBody().toString().contains("Email successfully verified"));
     }
 

@@ -3,8 +3,6 @@ package application.controller;
 import application.model.User;
 import application.service.UserService;
 import application.security.JwtService;
-// Assuming VerificationRequest is in the same package or imported from a DTO package
-import application.controller.VerificationRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +30,7 @@ public class UserController {
             }
 
             String token = authHeader.substring(7); // Remove "Bearer "
-            String email = jwtService.extractUsername(token); // Assuming subject is email
+            String email = jwtService.extractUsername(token);
 
             final User renter = userService.updateRenterRoleByEmail(email);
 
@@ -73,7 +71,7 @@ public class UserController {
     public ResponseEntity<?> verifyEmail(@PathVariable Long userID, @RequestBody VerificationRequest request) {
         try {
             final User verifiedUser = userService.verifyEmail(userID, request.getVerficationToken());
-            return ResponseEntity.ok("Email successfully verified for user: " + verifiedUser.getUsername());
+            return ResponseEntity.ok("Email successfully verified");
         }
         catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
