@@ -20,9 +20,10 @@ public class JwtService {
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
     /**
-     * Generate a JWT token for a given username.
+     * Generate a JWT token for a given email and userId.
      *
-     * @param username the username
+     * @param email the user's email
+     * @param userId the user's unique ID
      * @return JWT token string
      */
     public String generateToken(String email, String userId) {

@@ -3,10 +3,10 @@ package application.service;
 import application.model.User;
 import application.repository.UserRepository;
 import application.security.JwtService;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -16,10 +16,12 @@ public class AuthService {
     private final JwtService jwtService;
 
     public User register(User user) {
-        if (userRepository.existsByUsername(user.getUsername()))
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new RuntimeException("Username exists");
-        if (userRepository.existsByEmail(user.getEmail()))
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
             throw new RuntimeException("Email exists");
+        }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(user.getRole() == null ? "ROLE_USER" : user.getRole());
@@ -36,17 +38,18 @@ public class AuthService {
 
 
     public String login(User user) {
-        User dbUser = userRepository.findByUsername(user.getUsername())
+        final User dbUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new RuntimeException("Invalid username or password"));
 
-        if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword()))
+        if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
             throw new RuntimeException("Invalid username or password");
+        }
 
         return jwtService.generateToken(dbUser.getEmail(), dbUser.getUserId());
     }
 
     public String generateUserId(String username) {
-        int rand = (int) (Math.random() * 9000) + 1000;
+        final int rand = (int) (Math.random() * 9000) + 1000;
         return username + rand;
     }
 
