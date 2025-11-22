@@ -1,9 +1,8 @@
 package application.controller;
 
 import application.model.User;
-import application.service.UserService;
 import application.security.JwtService;
-
+import application.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +20,7 @@ public class UserController {
     /**
      * Updates the authenticated user's profile to include the RENTER role.
      * The user is identified by the email inside the JWT token.
+     * @return the User object set as renter
      */
     @PostMapping("/renter/new")
     public ResponseEntity<?> registerRenter(@RequestHeader("Authorization") String authHeader) {
@@ -29,8 +29,8 @@ public class UserController {
                 return ResponseEntity.status(401).body("Missing or invalid Authorization header");
             }
 
-            String token = authHeader.substring(7); // Remove "Bearer "
-            String email = jwtService.extractUsername(token);
+            final String token = authHeader.substring(7);
+            final String email = jwtService.extractUsername(token);
 
             final User renter = userService.updateRenterRoleByEmail(email);
 
@@ -42,8 +42,7 @@ public class UserController {
     }
 
     /**
-     * Updates the authenticated user's profile to include the AGENT role.
-     * The user is identified by the email inside the JWT token.
+     * @return the User object set as agent
      */
     @PostMapping("/agent/new")
     public ResponseEntity<?> registerAgent(@RequestHeader("Authorization") String authHeader) {
@@ -52,8 +51,8 @@ public class UserController {
                 return ResponseEntity.status(401).body("Missing or invalid Authorization header");
             }
 
-            String token = authHeader.substring(7);
-            String email = jwtService.extractUsername(token);
+            final String token = authHeader.substring(7);
+            final String email = jwtService.extractUsername(token);
 
             final User agent = userService.updateAgentRoleByEmail(email);
 
@@ -66,6 +65,7 @@ public class UserController {
 
     /**
      * Verifies a user's email address using a token sent via email.
+     * @return 200 status code and confirm message
      */
     @PostMapping("/{userID}/verify-email")
     public ResponseEntity<?> verifyEmail(@PathVariable Long userID, @RequestBody VerificationRequest request) {

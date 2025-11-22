@@ -15,6 +15,7 @@ public class UserService {
 
     /**
      * Registers a new user with default roles set to false.
+     * @return the registered User object
      */
     public User registerUser(String username, String email, String rawPassword, String role) {
         // Prevent duplicate usernames or emails
@@ -43,6 +44,7 @@ public class UserService {
     /**
      * Looks up an existing user by their EMAIL and sets their is_agent flag to true.
      * This is designed to be used with JWT extraction where the email is trusted.
+     * @return the User that was set to agent
      */
     public User updateAgentRoleByEmail(String email) {
         final User user = userRepository.findByEmail(email)
@@ -55,6 +57,7 @@ public class UserService {
     /**
      * Looks up an existing user by their EMAIL and sets their is_renter flag to true.
      * This is designed to be used with JWT extraction where the email is trusted.
+     * @return User object set to retner
      */
     public User updateRenterRoleByEmail(String email) {
         final User user = userRepository.findByEmail(email)
