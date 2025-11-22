@@ -1,18 +1,14 @@
 package application.controller;
 
-import io.jsonwebtoken.Claims;
-import org.springframework.web.bind.annotation.RequestHeader;
-
 import application.model.User;
 import application.repository.UserRepository;
-import application.service.AuthService;
 import application.security.JwtService;
-import lombok.RequiredArgsConstructor;
+import application.service.AuthService;
+import io.jsonwebtoken.Claims;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,9 +30,9 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        User savedUser = authService.register(user);
+        final User savedUser = authService.register(user);
 
-        Map<String, Object> response = new HashMap<>();
+        final Map<String, Object> response = new HashMap<>();
         response.put("message", "User registered");
         response.put("user", savedUser);
 
@@ -46,10 +42,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        String token = authService.login(user);       // generates JWT token
-        User dbUser = authService.getUserByUsername(user.getUsername());
+        final String token = authService.login(user);       // generates JWT token
+        final User dbUser = authService.getUserByUsername(user.getUsername());
 
-        Map<String, Object> response = new HashMap<>();
+        final Map<String, Object> response = new HashMap<>();
         response.put("message", "Login successful");
         response.put("username", dbUser.getUsername());
         response.put("email", dbUser.getEmail());
@@ -65,14 +61,14 @@ public class AuthController {
             return ResponseEntity.status(401).body("Missing or invalid Authorization header");
         }
 
-        String token = authHeader.substring(7); // Remove "Bearer "
-        Claims claims = jwtService.extractAllClaims(token);
+        final String token = authHeader.substring(7); // Remove "Bearer "
+        final Claims claims = jwtService.extractAllClaims(token);
 
-        Instant now = Instant.now();
-        Instant exp = claims.getExpiration().toInstant();
-        long secondsLeft = exp.getEpochSecond() - now.getEpochSecond();
+        final Instant now = Instant.now();
+        final Instant exp = claims.getExpiration().toInstant();
+        final long secondsLeft = exp.getEpochSecond() - now.getEpochSecond();
 
-        Map<String, Object> response = new HashMap<>();
+        final Map<String, Object> response = new HashMap<>();
         response.put("message", "JWT is valid");
         response.put("secondsUntilExpiration", secondsLeft);
 

@@ -22,7 +22,6 @@ public class JwtService {
     /**
      * Generate a JWT token for a given username.
      *
-     * @param username the username
      * @return JWT token string
      */
     public String generateToken(String email, String userId) {
