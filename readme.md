@@ -150,6 +150,7 @@ Returns 404 if the user isn’t found.
 
 ```
 curl -X POST http://localhost:8080/roommates/new \
+  -H "Authorization: Bearer <JWT_TOKEN>
   -H "Content-Type: application/json" \
   -d '{
     "city": "New York",
@@ -172,7 +173,8 @@ should return
 Returns all users currently looking for roommates.
 
 ```
-curl -X GET http://localhost:8080/roommates/search
+curl -X GET http://localhost:8080/roommates/search \
+-H "Authorization: Bearer <JWT_TOKEN>
 ```
 
 should return
@@ -231,6 +233,7 @@ Returns 404 if either user isn’t found.
 
 ```
 curl -X POST "http://localhost:8080/roommates/request/2?requesterUsername=admin"
+-H "Authorization: Bearer <JWT_TOKEN>
 ```
 
 should return
@@ -247,6 +250,7 @@ Returns 404 if the match doesn’t exist.
 
 ```
 curl -X POST http://localhost:8080/roommates/5/accept
+-H "Authorization: Bearer <JWT_TOKEN>
 ```
 
 should return
@@ -263,6 +267,7 @@ Returns 404 if the match doesn’t exist.
 
 ```
 curl -X POST http://localhost:8080/roommates/5/reject
+-H "Authorization: Bearer <JWT_TOKEN>
 ```
 
 should return
