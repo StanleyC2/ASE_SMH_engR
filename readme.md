@@ -139,49 +139,6 @@ curl -X GET http://localhost:8080/roommates/search \
 
 ---
 
-## Rec Endpoints
-
-### /rec/roommates/personality
-
-This endpoint gets the personality responses for a user trying to find roommates. It takes in the user ID and 8 integer response values (1–10). These responses will be stored in the database. Every time a user enters a new response, it will replace the old ones. If the `userId` is not linked to any existing user, it will show a 404 error. If the given response is invalid (not 8 values, or not between 1–10), it will show a 400 error.
-
-```
-curl -X POST http://localhost:8080/rec/roommates/personality \
-  -H "Authorization: Bearer <JWT_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "1",
-    "responseValues": [1,2,3,4,5,6,7,8]
-  }'
-```
-
-should return
-```
-{"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
-```
-
----
-
-### /rec/roommates/recommendation
-
-This endpoint gets a list of users that is recommended to the user based on their previous responses. If they have not called the `/rec/roommates/personality` endpoint before, it will show a HTTP 404 error. And if any of the responses were invalid, it will show a HTTP 400 error.
-
-```
-curl -X POST http://localhost:8080/rec/roommates/personality \
-  -H "Authorization: Bearer <JWT_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "userId": "1"
-  }'
-```
-
-should return
-```
-{"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
-```
-
----
-
 
 ## Roommate Endpoints
 
@@ -221,6 +178,47 @@ curl -X GET http://localhost:8080/roommates/search
 should return
 ```
 [{"id":1,"city":"New York","minBudget":2000,"maxBudget":3500,"notes":"Prefer quiet roommates","lookingForRoommates":true}]
+```
+
+---
+
+### /roommates/personality
+
+This endpoint gets the personality responses for a user trying to find roommates. It takes in the user ID and 8 integer response values (1–10). These responses will be stored in the database. Every time a user enters a new response, it will replace the old ones. If the `userId` is not linked to any existing user, it will show a 404 error. If the given response is invalid (not 8 values, or not between 1–10), it will show a 400 error.
+
+```
+curl -X POST http://localhost:8080/roommates/personality \
+  -H "Authorization: Bearer <JWT_Token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "1",
+    "responseValues": [1,2,3,4,5,6,7,8]
+  }'
+```
+
+should return
+```
+{"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
+```
+
+---
+
+### /roommates/recommendation
+
+This endpoint gets a list of users that is recommended to the user based on their previous responses. If they have not called the `/rec/roommates/personality` endpoint before, it will show a HTTP 404 error. And if any of the responses were invalid, it will show a HTTP 400 error.
+
+```
+curl -X POST http://localhost:8080/rec/roommates/personality \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "1"
+  }'
+```
+
+should return
+```
+{"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
 ```
 
 ---
