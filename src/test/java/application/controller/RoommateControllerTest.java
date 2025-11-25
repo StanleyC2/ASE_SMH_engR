@@ -5,8 +5,9 @@ import static org.mockito.Mockito.*;
 
 import application.model.RoommateMatch;
 import application.model.RoommatePreference;
-import application.model.User;
 import application.service.RoommateService;
+import java.security.Principal;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,16 +15,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 class RoommateControllerTest {
 
     @Mock private RoommateService roommateService;
+
     @InjectMocks private RoommateController roommateController;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    private Principal principal(String name) {
+        return () -> name;
     }
 
     @Test
@@ -41,7 +45,7 @@ class RoommateControllerTest {
         when(roommateService.saveOrUpdate("admin", request)).thenReturn(saved);
 
         ResponseEntity<RoommatePreference> response =
-                roommateController.createOrUpdate(request, () -> "admin");
+                roommateController.createOrUpdate(request, principal("admin"));
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("New York", response.getBody().getCity());
@@ -71,7 +75,8 @@ class RoommateControllerTest {
 
         when(roommateService.createMatchRequest("admin", 2L)).thenReturn(match);
 
-        ResponseEntity<RoommateMatch> response = roommateController.requestMatch(2L, "admin");
+        ResponseEntity<RoommateMatch> response =
+                roommateController.requestMatch(2L, "admin");
 
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(1L, response.getBody().getId());

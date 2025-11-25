@@ -9,20 +9,22 @@ import application.model.User;
 import application.repository.RoommateMatchRepository;
 import application.repository.RoommatePreferenceRepository;
 import application.repository.UserRepository;
+import application.repository.ResponseRepository;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-import java.util.Optional;
-
 class RoommateServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private RoommatePreferenceRepository preferenceRepository;
     @Mock private RoommateMatchRepository matchRepository;
+    @Mock private ResponseRepository responseRepository; // not used in these tests but needed for constructor
+
     @InjectMocks private RoommateService roommateService;
 
     private User user;
