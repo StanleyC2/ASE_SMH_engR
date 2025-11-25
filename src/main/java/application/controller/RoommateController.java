@@ -2,12 +2,16 @@ package application.controller;
 
 import application.model.RoommateMatch;
 import application.model.RoommatePreference;
+import application.model.User;
 import application.service.RoommateService;
+import application.model.Response;
 import java.security.Principal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 /**
  * Endpoints for roommate matching.
@@ -38,12 +42,21 @@ public class RoommateController {
 
     /**
      * Return all users currently looking for roommates.
-     *
      * @return 200 OK with list
      */
     @GetMapping("/search")
     public ResponseEntity<List<RoommatePreference>> search() {
         return ResponseEntity.ok(roommateService.listActive());
+    }
+
+    @PostMapping("/recommendation")
+    public ResponseEntity<?> getRoommateRecommendations(Principal principal) {
+        try {
+            String usernameOrEmail = principal.getName();
+            return ResponseEntity.ok(roommateService.recommendRoommates(usernameOrEmail, 8));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
     @PostMapping("/{matchId}/accept")
@@ -62,5 +75,45 @@ public class RoommateController {
             @RequestParam(defaultValue = "admin") String requesterUsername
     ) {
         return ResponseEntity.ok(roommateService.createMatchRequest(requesterUsername, candidateId));
+    }
+
+    @PostMapping("/personality")
+    public ResponseEntity<?> getResponses(@RequestBody Response response, Principal principal) {
+        try {
+            String principalName = principal.getName();
+            final Response addedResponse = roommateService.addOrReplaceResponse(principalName, response);
+            return ResponseEntity.ok(addedResponse);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
+
+    /**
+     * all match requests the user sent
+     */
+    @GetMapping("/history/sent")
+    public ResponseEntity<List<RoommateMatch>> getSentRequests(Principal principal) {
+        String email = principal.getName(); // set by JwtFilter
+        return ResponseEntity.ok(roommateService.listRequestsSent(email));
+    }
+
+    /**
+     * all match requests the user received
+     */
+    @GetMapping("/history/received")
+    public ResponseEntity<List<RoommateMatch>> getReceivedRequests(Principal principal) {
+        String email = principal.getName();
+        return ResponseEntity.ok(roommateService.listRequestsReceived(email));
+    }
+
+    /**
+     * all accepted matches
+     */
+    @GetMapping("/history/matches")
+    public ResponseEntity<List<RoommateMatch>> getAcceptedMatches(Principal principal) {
+        String email = principal.getName();
+        return ResponseEntity.ok(roommateService.listAcceptedMatches(email));
     }
 }
