@@ -44,7 +44,7 @@ public class RoommateService {
      */
     @Transactional
     public RoommatePreference saveOrUpdate(String identifier, RoommatePreference newPref) {
-        final User user = userRepository.findByUsername(identifier).orElse(null);
+        User user = userRepository.findByUsername(identifier).orElse(null);
         if (user == null) {
             user = userRepository.findByEmail(identifier)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + identifier));
