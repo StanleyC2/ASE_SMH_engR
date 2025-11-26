@@ -1,22 +1,21 @@
 package application.service;
 
+import application.model.Response;
 import application.model.RoommateMatch;
 import application.model.RoommateMatch.Status;
 import application.model.RoommatePreference;
 import application.model.User;
-import application.model.Response;
+import application.repository.ResponseRepository;
 import application.repository.RoommateMatchRepository;
 import application.repository.RoommatePreferenceRepository;
 import application.repository.UserRepository;
-import application.repository.ResponseRepository;
 import application.security.JwtService;
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +44,7 @@ public class RoommateService {
      */
     @Transactional
     public RoommatePreference saveOrUpdate(String identifier, RoommatePreference newPref) {
-        User user = userRepository.findByUsername(identifier).orElse(null);
+        final User user = userRepository.findByUsername(identifier).orElse(null);
         if (user == null) {
             user = userRepository.findByEmail(identifier)
                     .orElseThrow(() -> new IllegalArgumentException("User not found: " + identifier));
@@ -83,7 +82,7 @@ public class RoommateService {
      * @throws IllegalArgumentException If the provided answers are not in the specified format.
      */
     public Response addOrReplaceResponse(String principalName, Response givenResponse) {
-        User user = userRepository.findByUsername(principalName)
+        final User user = userRepository.findByUsername(principalName)
                 .orElseGet(() -> userRepository.findByEmail(principalName)
                         .orElseThrow(() ->
                                 new NoSuchElementException("User not found: " + principalName)));
@@ -123,7 +122,7 @@ public class RoommateService {
         return preferenceRepository.findAllActive();
     }
     private static class ScoredUser {
-        Long userId;
+        final Long userId;
         double score;
 
         public ScoredUser(Long userId, double score) {
@@ -143,57 +142,64 @@ public class RoommateService {
                 .orElseGet(() -> userRepository.findByEmail(principalName)
                         .orElseThrow(() -> new IllegalArgumentException("User not found: " + principalName)));
         // if this user is looking for a roomate then we want to send them recs
-        RoommatePreference userPref = preferenceRepository.findByUser(user).orElseThrow(() -> new IllegalArgumentException("User prefs not found: " + principalName));
-        Response userResponse = responseRepository.getResponseByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("User response not found: " + principalName));
-        if(userResponse.getResponseValues().size() != expectedNumQuestions) {
+        final RoommatePreference userPref = preferenceRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("User prefs not found: " + principalName));
+        final Response userResponse = responseRepository.getResponseByUserId(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User response not found: " + principalName));
+        if (userResponse.getResponseValues().size() != expectedNumQuestions) {
             throw new IllegalArgumentException("Wrong number of responses");
         }
-        Queue<ScoredUser> userAndCos = new PriorityQueue<>(Comparator.comparingDouble(a->a.score));
-        for(RoommatePreference candidatePref : listActive()){
-            if((candidatePref.getUser().getId().equals(user.getId())) || !(userPref.getCity().equals(candidatePref.getCity())) || !(userPref.getMaxBudget()>=candidatePref.getMinBudget() && candidatePref.getMaxBudget()>=userPref.getMinBudget())) {
+        final Queue<ScoredUser> userAndCos = new PriorityQueue<>(Comparator.comparingDouble(a -> a.score));
+        for (RoommatePreference candidatePref : listActive()) {
+            if ((candidatePref.getUser().getId().equals(user.getId()))
+                    || !(userPref.getCity().equals(candidatePref.getCity()))
+                    || !(userPref.getMaxBudget() >= candidatePref.getMinBudget()
+                    && candidatePref.getMaxBudget() >= userPref.getMinBudget())) {
                 continue;
             }
-            Response currentUser2Res = responseRepository.getResponseByUserId(candidatePref.getUser().getId()).orElse(null);
-            if(currentUser2Res == null || currentUser2Res.getResponseValues().size() != expectedNumQuestions) {
+            final Response currentUser2Res = responseRepository.getResponseByUserId(candidatePref.getUser().getId())
+                    .orElse(null);
+            if (currentUser2Res == null || currentUser2Res.getResponseValues().size() != expectedNumQuestions) {
                 continue;
             }
-            double cosineSimilarity = cosineSimilarityHelper(userResponse, currentUser2Res);
-            if(cosineSimilarity < 0.4 - 1e-6) {
+            final double cosineSimilarity = cosineSimilarityHelper(userResponse, currentUser2Res);
+            if (cosineSimilarity < 0.4 - 1e-6) {
                 continue;
             }
-            ScoredUser currentCandidate = new ScoredUser(candidatePref.getUser().getId(), cosineSimilarity);
+            final ScoredUser currentCandidate = new ScoredUser(candidatePref.getUser().getId(), cosineSimilarity);
             userAndCos.add(currentCandidate);
 
-            if(userAndCos.size() > 5) {
+            if (userAndCos.size() > 5) {
                 userAndCos.poll();
             }
         }
-        return userAndCos.stream().sorted(Comparator.comparingDouble((ScoredUser u) -> u.score).reversed()).map(u -> userRepository.findById(u.userId).orElseThrow()).toList();
+        return userAndCos.stream().sorted(Comparator.comparingDouble((ScoredUser u) -> u.score)
+                .reversed()).map(u -> userRepository.findById(u.userId).orElseThrow()).toList();
 
     }
 
     public double cosineSimilarityHelper(Response user1Responses, Response user2Responses) {
-        List<Integer> responsesValues1 = user1Responses.getResponseValues();
-        List<Integer> responsesValues2 = user2Responses.getResponseValues();
-        if(responsesValues1.size()!=responsesValues2.size()){
+        final List<Integer> responsesValues1 = user1Responses.getResponseValues();
+        final List<Integer> responsesValues2 = user2Responses.getResponseValues();
+        if (responsesValues1.size() != responsesValues2.size()) {
             return 0;
         } else {
             double dotProduct = 0.0;
             double magnitude1 = 0.0;
             double magnitude2 = 0.0;
-            for(int i =0; i<responsesValues1.size(); i++){
-                magnitude1+=Math.pow(responsesValues1.get(i), 2);
-                magnitude2+=Math.pow(responsesValues2.get(i), 2);
+            for (int i = 0; i < responsesValues1.size(); i++) {
+                magnitude1 += Math.pow(responsesValues1.get(i), 2);
+                magnitude2 += Math.pow(responsesValues2.get(i), 2);
                 dotProduct += responsesValues1.get(i) * responsesValues2.get(i);
             }
 
             magnitude1 = Math.sqrt(magnitude1);
             magnitude2 = Math.sqrt(magnitude2);
 
-            if(Math.abs(magnitude1)<1e-6 || Math.abs(magnitude2)<1e-6) {
+            if (Math.abs(magnitude1) < 1e-6 || Math.abs(magnitude2) < 1e-6) {
                 return 0.0;
             }
-            return (dotProduct / (magnitude1*magnitude2));
+            return (dotProduct / (magnitude1 * magnitude2));
         }
     }
 
@@ -212,7 +218,8 @@ public class RoommateService {
                 .orElseThrow(() -> new IllegalArgumentException("Candidate not found: " + candidateId));
 
         // prevent duplicates
-        final RoommateMatch existing = matchRepository.findByRequesterAndCandidate(requester, candidate).orElse(null);
+        final RoommateMatch existing = matchRepository.findByRequesterAndCandidate(requester, candidate)
+                .orElse(null);
         if (existing != null) {
             return existing;
         }
@@ -264,26 +271,35 @@ public class RoommateService {
     }
 
     /**
-     * All roommate match requests this user has sent (any status).
+     * Find all match requests previously sent by a user.
+     *
+     * @param email user email
+     * @return list of all roommate match requests this user has sent (any status).
      */
     public List<RoommateMatch> listRequestsSent(String email) {
-        User user = getUserByEmail(email);
+        final User user = getUserByEmail(email);
         return matchRepository.findByRequester(user);
     }
 
     /**
-     * All roommate match requests this user has received (any status).
+     * Find all match requests previously recieved by a user.
+     *
+     * @param email user email
+     * @return list of all roommate match requests recieved by this user.
      */
     public List<RoommateMatch> listRequestsReceived(String email) {
-        User user = getUserByEmail(email);
+        final User user = getUserByEmail(email);
         return matchRepository.findByCandidate(user);
     }
 
     /**
-     * All ACCEPTED matches involving this user (as requester or candidate).
+     * Find All ACCEPTED matches involving this user (as requester or candidate).
+     *
+     * @param email user email
+     * @return list of all roommate matches this user has been a part of.
      */
     public List<RoommateMatch> listAcceptedMatches(String email) {
-        User user = getUserByEmail(email);
+        final User user = getUserByEmail(email);
         return matchRepository.findByRequesterOrCandidate(user, user)
                 .stream()
                 .filter(m -> m.getStatus() == Status.ACCEPTED)

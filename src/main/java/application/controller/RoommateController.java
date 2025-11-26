@@ -1,10 +1,9 @@
 package application.controller;
 
+import application.model.Response;
 import application.model.RoommateMatch;
 import application.model.RoommatePreference;
-import application.model.User;
 import application.service.RoommateService;
-import application.model.Response;
 import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -48,27 +47,42 @@ public class RoommateController {
     public ResponseEntity<List<RoommatePreference>> search() {
         return ResponseEntity.ok(roommateService.listActive());
     }
-
+    /**
+     * Return recommended roomates based on cosine similarity calculation.
+     * @return 200 OK with list
+     */
     @PostMapping("/recommendation")
     public ResponseEntity<?> getRoommateRecommendations(Principal principal) {
         try {
-            String usernameOrEmail = principal.getName();
+            final String usernameOrEmail = principal.getName();
             return ResponseEntity.ok(roommateService.recommendRoommates(usernameOrEmail, 8));
         } catch (Exception e) {
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 
+    /**
+     * Accept a match request.
+     * @return 200 OK
+     */
     @PostMapping("/{matchId}/accept")
     public ResponseEntity<RoommateMatch> accept(@PathVariable Long matchId) {
         return ResponseEntity.ok(roommateService.acceptMatch(matchId));
     }
 
+    /**
+     * Reject a match request.
+     * @return 200 OK
+     */
     @PostMapping("/{matchId}/reject")
     public ResponseEntity<RoommateMatch> reject(@PathVariable Long matchId) {
         return ResponseEntity.ok(roommateService.rejectMatch(matchId));
     }
 
+    /**
+     * Send a match request.
+     * @return 200 OK and request details.
+     */
     @PostMapping("/request/{candidateId}")
     public ResponseEntity<RoommateMatch> requestMatch(
             @PathVariable Long candidateId,
@@ -77,10 +91,14 @@ public class RoommateController {
         return ResponseEntity.ok(roommateService.createMatchRequest(requesterUsername, candidateId));
     }
 
+    /**
+     * Submit personality survey.
+     * @return 200 OK with list of responses.
+     */
     @PostMapping("/personality")
     public ResponseEntity<?> getResponses(@RequestBody Response response, Principal principal) {
         try {
-            String principalName = principal.getName();
+            final String principalName = principal.getName();
             final Response addedResponse = roommateService.addOrReplaceResponse(principalName, response);
             return ResponseEntity.ok(addedResponse);
         } catch (NoSuchElementException e) {
@@ -91,29 +109,32 @@ public class RoommateController {
     }
 
     /**
-     * all match requests the user sent
+     * Return history of match requests sent.
+     * @return 200 OK with list of match requests sent.
      */
     @GetMapping("/history/sent")
     public ResponseEntity<List<RoommateMatch>> getSentRequests(Principal principal) {
-        String email = principal.getName(); // set by JwtFilter
+        final String email = principal.getName(); // set by JwtFilter
         return ResponseEntity.ok(roommateService.listRequestsSent(email));
     }
 
     /**
-     * all match requests the user received
+     * Return history of match requests recieved.
+     * @return 200 OK with list of match requests recieved.
      */
     @GetMapping("/history/received")
     public ResponseEntity<List<RoommateMatch>> getReceivedRequests(Principal principal) {
-        String email = principal.getName();
+        final String email = principal.getName();
         return ResponseEntity.ok(roommateService.listRequestsReceived(email));
     }
 
     /**
-     * all accepted matches
+     * Return history of matches.
+     * @return 200 OK with list of matches.
      */
     @GetMapping("/history/matches")
     public ResponseEntity<List<RoommateMatch>> getAcceptedMatches(Principal principal) {
-        String email = principal.getName();
+        final String email = principal.getName();
         return ResponseEntity.ok(roommateService.listAcceptedMatches(email));
     }
 }
