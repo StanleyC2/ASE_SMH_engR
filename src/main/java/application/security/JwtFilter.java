@@ -27,6 +27,8 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        logger.info("Logged New API Request: " + request.getMethod() + " " + request.getRequestURL());
+
         final String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
@@ -34,11 +36,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtService.validateToken(token)) {
                 final String email = jwtService.extractUsername(token);
+                final String userId = jwtService.extractUserId(token);
 
+                // Store email as principal (username) for authentication
+                // The userId is embedded in the token and can be extracted when needed
                 final UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(email, null, List.of());
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                
+                // Store userId in request attribute for easy access by controllers
+                request.setAttribute("userId", userId);
             }
         }
 

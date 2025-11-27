@@ -30,49 +30,61 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        final User savedUser = authService.register(user);
+        try {
+            final User savedUser = authService.register(user);
 
-        final Map<String, Object> response = new HashMap<>();
-        response.put("message", "User registered");
-        response.put("user", savedUser);
+            final Map<String, Object> response = new HashMap<>();
+            response.put("message", "User registered");
+            response.put("user", savedUser);
 
-        return ResponseEntity.status(201).body(response);
+            return ResponseEntity.status(201).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        final String token = authService.login(user);       // generates JWT token
-        final User dbUser = authService.getUserByUsername(user.getUsername());
+        try {
+            final String token = authService.login(user);       // generates JWT token
+            final User dbUser = authService.getUserByUsername(user.getUsername());
 
-        final Map<String, Object> response = new HashMap<>();
-        response.put("message", "Login successful");
-        response.put("username", dbUser.getUsername());
-        response.put("email", dbUser.getEmail());
-        response.put("userId", dbUser.getUserId());
-        response.put("token", token);
+            final Map<String, Object> response = new HashMap<>();
+            response.put("message", "Login successful");
+            response.put("username", dbUser.getUsername());
+            response.put("email", dbUser.getEmail());
+            response.put("userId", dbUser.getUserId());
+            response.put("token", token);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
     }
 
     @GetMapping("/jwttest")
-    public ResponseEntity<?> jwtTest(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> jwtTest(@RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(401).body("Missing or invalid Authorization header");
         }
 
-        final String token = authHeader.substring(7); // Remove "Bearer "
-        final Claims claims = jwtService.extractAllClaims(token);
+        try {
+            final String token = authHeader.substring(7); // Remove "Bearer "
+            final Claims claims = jwtService.extractAllClaims(token);
 
-        final Instant now = Instant.now();
-        final Instant exp = claims.getExpiration().toInstant();
-        final long secondsLeft = exp.getEpochSecond() - now.getEpochSecond();
+            final Instant now = Instant.now();
+            final Instant exp = claims.getExpiration().toInstant();
+            final long secondsLeft = exp.getEpochSecond() - now.getEpochSecond();
 
-        final Map<String, Object> response = new HashMap<>();
-        response.put("message", "JWT is valid");
-        response.put("secondsUntilExpiration", secondsLeft);
+            final Map<String, Object> response = new HashMap<>();
+            response.put("message", "JWT is valid");
+            response.put("secondsUntilExpiration", secondsLeft);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid or expired JWT token");
+        }
     }
 
 
