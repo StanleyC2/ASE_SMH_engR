@@ -80,7 +80,6 @@ class AuthControllerTest {
     dbUser.setUserId("testuser1234");
     dbUser.setUsername("testuser");
     dbUser.setEmail("testuser@example.com");
-    dbUser.setRole("ROLE_USER");
 
     when(authService.login(loginUser)).thenReturn("mockJwtToken");
     when(authService.getUserByUsername("testuser")).thenReturn(dbUser);
