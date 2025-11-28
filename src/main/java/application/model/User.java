@@ -42,15 +42,33 @@ public class User {
     private String email;
 
     /**
-     * Role of the user (e.g., ROLE_USER)
+     * Agent switch
      */
     @Column(nullable = false)
-    private String role;
+    private boolean isAgent;
+
+    /**
+     * Renter switch
+     */
+    @Column(nullable = false)
+    private boolean isRenter;
 
     /**
      *  ID of the user, unique userID
      */
     @Column(unique = true, nullable = false)
     private String userId;
+
+    /**
+     * Flag indicating if the user has verified their email address.
+     */
+    @Column(nullable = false)
+    private boolean isEmailVerified;
+
+    /**
+     * Token sent to the user via email to verify their account.
+     */
+    @Column(nullable = true)
+    private String verificationToken;
 
 }

@@ -45,7 +45,6 @@ class AuthIntegrationTest {
             .username("testuser")
             .password(passwordEncoder.encode("testpass"))
             .email("testuser@example.com")
-            .role("ROLE_USER")
             .userId("testuser1234") // Set userId to satisfy not-null constraint
             .build();
     userRepository.save(user);
@@ -58,7 +57,6 @@ class AuthIntegrationTest {
             .username("newuser")
             .password("newpass")
             .email("newuser@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc
@@ -97,7 +95,6 @@ class AuthIntegrationTest {
             .username("testuser")
             .password("any")
             .email("other@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc
@@ -115,7 +112,6 @@ class AuthIntegrationTest {
             .username("anotheruser")
             .password("any")
             .email("testuser@example.com")
-            .role("ROLE_USER")
             .build();
 
     mockMvc
@@ -202,14 +198,12 @@ class AuthIntegrationTest {
         .username("user1")
         .password("pass1")
         .email("user1@example.com")
-        .role("ROLE_USER")
         .build();
 
     User user2 = User.builder()
         .username("user2")
         .password("pass2")
         .email("user2@example.com")
-        .role("ROLE_USER")
         .build();
 
     // Register both users
@@ -277,14 +271,12 @@ class AuthIntegrationTest {
         .username("alice")
         .password("alicepass")
         .email("alice@example.com")
-        .role("ROLE_USER")
         .build();
 
     User user2 = User.builder()
         .username("bob")
         .password("bobpass")
         .email("bob@example.com")
-        .role("ROLE_USER")
         .build();
 
     // Register both users

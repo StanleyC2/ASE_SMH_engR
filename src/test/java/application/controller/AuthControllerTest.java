@@ -45,13 +45,11 @@ class AuthControllerTest {
     requestUser.setUsername("testuser");
     requestUser.setPassword("password123");
     requestUser.setEmail("testuser@example.com");
-    requestUser.setRole("ROLE_USER");
 
     User savedUser = new User();
     savedUser.setUserId("testuser1234");
     savedUser.setUsername("testuser");
     savedUser.setEmail("testuser@example.com");
-    savedUser.setRole("ROLE_USER");
 
     when(authService.register(requestUser)).thenReturn(savedUser);
 
@@ -82,7 +80,6 @@ class AuthControllerTest {
     dbUser.setUserId("testuser1234");
     dbUser.setUsername("testuser");
     dbUser.setEmail("testuser@example.com");
-    dbUser.setRole("ROLE_USER");
 
     when(authService.login(loginUser)).thenReturn("mockJwtToken");
     when(authService.getUserByUsername("testuser")).thenReturn(dbUser);

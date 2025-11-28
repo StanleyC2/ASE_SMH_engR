@@ -24,7 +24,6 @@ public class AuthService {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(user.getRole() == null ? "ROLE_USER" : user.getRole());
 
         String newUserId;
         do {
