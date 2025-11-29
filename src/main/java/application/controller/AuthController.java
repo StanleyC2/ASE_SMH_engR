@@ -35,7 +35,17 @@ public class AuthController {
 
             final Map<String, Object> response = new HashMap<>();
             response.put("message", "User registered");
-            response.put("user", savedUser);
+            
+            // Create a safe user object without password for response
+            final Map<String, Object> userResponse = new HashMap<>();
+            userResponse.put("id", savedUser.getId());
+            userResponse.put("username", savedUser.getUsername());
+            userResponse.put("email", savedUser.getEmail());
+            userResponse.put("userId", savedUser.getUserId());
+            userResponse.put("agent", savedUser.isAgent());
+            userResponse.put("renter", savedUser.isRenter());
+            userResponse.put("emailVerified", savedUser.isEmailVerified());
+            response.put("user", userResponse);
 
             return ResponseEntity.status(201).body(response);
         } catch (RuntimeException e) {

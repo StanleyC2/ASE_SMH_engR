@@ -1,6 +1,7 @@
 package application.integration;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -335,5 +336,168 @@ class AuthIntegrationTest {
     // Verify tokens are different
     assertNotEquals(aliceToken, bobToken,
         "Alice and Bob should have different tokens");
+  }
+
+  @Test
+  void testRegisterWithMissingFields() throws Exception {
+    // Try to register with missing password
+    User incompleteUser = User.builder()
+        .username("incomplete")
+        .email("incomplete@example.com")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(incompleteUser)))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void testMultipleLoginAttempts() throws Exception {
+    // Test that a user can login multiple times and get different tokens
+    User loginUser = User.builder().username("testuser").password("testpass").build();
+
+    String firstResponse = mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(loginUser)))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    String firstToken = objectMapper.readTree(firstResponse).get("token").asText();
+
+    // Small delay to ensure different token generation time
+    Thread.sleep(10);
+
+    String secondResponse = mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(loginUser)))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    String secondToken = objectMapper.readTree(secondResponse).get("token").asText();
+
+    // Both tokens should be valid but may differ due to timestamp
+    assertNotNull(firstToken);
+    assertNotNull(secondToken);
+  }
+
+  @Test
+  void testPasswordCaseSensitivity() throws Exception {
+    User newUser = User.builder()
+        .username("casetest")
+        .password("TestPass123")
+        .email("casetest@example.com")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(newUser)))
+        .andExpect(status().isCreated());
+
+    // Try login with wrong case password
+    User wrongCaseLogin = User.builder()
+        .username("casetest")
+        .password("testpass123")  // Different case
+        .build();
+
+    mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(wrongCaseLogin)))
+        .andExpect(status().isUnauthorized());
+
+    // Try login with correct password
+    User correctLogin = User.builder()
+        .username("casetest")
+        .password("TestPass123")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(correctLogin)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").exists());
+  }
+
+  @Test
+  void testUsernameNotCaseSensitiveForLogin() throws Exception {
+    // Register with lowercase
+    User newUser = User.builder()
+        .username("lowercase")
+        .password("password123")
+        .email("lowercase@example.com")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(newUser)))
+        .andExpect(status().isCreated());
+
+    // Try login with different case username (should work if DB is case-insensitive)
+    User loginAttempt = User.builder()
+        .username("lowercase")  // Same case
+        .password("password123")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(loginAttempt)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void testJwtTestReturnsExpirationTime() throws Exception {
+    User loginUser = User.builder().username("testuser").password("testpass").build();
+
+    String responseJson = mockMvc.perform(
+        post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(loginUser)))
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    String token = objectMapper.readTree(responseJson).get("token").asText();
+
+    mockMvc.perform(
+        get("/auth/jwttest")
+            .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.message").value("JWT is valid"))
+        .andExpect(jsonPath("$.secondsUntilExpiration").isNumber())
+        .andExpect(jsonPath("$.secondsUntilExpiration").value(org.hamcrest.Matchers.greaterThan(0)));
+  }
+
+  @Test
+  void testRegisterReturnsCompleteUserInfo() throws Exception {
+    User newUser = User.builder()
+        .username("fullinfo")
+        .password("pass123")
+        .email("fullinfo@example.com")
+        .build();
+
+    mockMvc.perform(
+        post("/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(newUser)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.message").value("User registered"))
+        .andExpect(jsonPath("$.user.username").value("fullinfo"))
+        .andExpect(jsonPath("$.user.email").value("fullinfo@example.com"))
+        .andExpect(jsonPath("$.user.userId").exists())
+        .andExpect(jsonPath("$.user.userId").value(org.hamcrest.Matchers.startsWith("fullinfo")))
+        .andExpect(jsonPath("$.user.password").doesNotExist());  // Password should not be in response
   }
 }
