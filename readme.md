@@ -31,6 +31,45 @@ Default port is `localhost:8080`
 
 ---
 
+## Persistent Storage
+
+This service uses an **H2 file-based database** for persistent storage, ensuring all data (users, listings, roommate preferences, matches, etc.) is retained across application restarts.
+
+### Database Configuration
+
+- **Database Type**: H2 (file-based)
+- **Storage Location**: `./data/roommate_db.mv.db`
+- **Connection URL**: `jdbc:h2:file:./data/roommate_db`
+- **Persistence**: All data is automatically saved to disk and survives application restarts
+
+### H2 Console (Development Only)
+
+For debugging and development, you can access the H2 database console at:
+- **URL**: http://localhost:8080/h2-console
+- **JDBC URL**: `jdbc:h2:file:./data/roommate_db`
+- **Username**: `sa`
+- **Password**: `best_group_ever`
+
+**Note**: The H2 console should be disabled in production environments for security.
+
+### Database Schema
+
+The service maintains the following tables:
+- `users` - User accounts with authentication credentials
+- `listings` - Property listings created by agents
+- `roommate_preferences` - User preferences for finding roommates
+- `roommate_matches` - Roommate match requests and their status
+- `responses` - Personality quiz responses for compatibility matching
+
+### Data Initialization
+
+On first startup, the service automatically:
+1. Creates the database schema if it doesn't exist
+2. Seeds example users from `example_users.json` (if configured)
+3. Maintains referential integrity across all tables
+
+---
+
 ## Auth Endpoints
 
 ### /auth/register
