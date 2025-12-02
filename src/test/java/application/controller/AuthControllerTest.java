@@ -1,7 +1,9 @@
 package application.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import application.model.User;
@@ -243,6 +245,98 @@ class AuthControllerTest {
     
     // Password should not exist in the response map
     assertNull(returnedUser.get("password"), "Password should not be included in registration response");
+  }
+
+  @Test
+  void testLoginWithEmptyUsername() {
+    User loginUser = new User();
+    loginUser.setUsername("");
+    loginUser.setPassword("password123");
+
+    when(authService.login(loginUser)).thenThrow(new RuntimeException("Invalid username or password"));
+
+    ResponseEntity<?> response = authController.login(loginUser);
+
+    assertEquals(401, response.getStatusCode().value());
+    assertEquals("Invalid username or password", response.getBody());
+  }
+
+  @Test
+  void testLoginWithEmptyPassword() {
+    User loginUser = new User();
+    loginUser.setUsername("testuser");
+    loginUser.setPassword("");
+
+    when(authService.login(loginUser)).thenThrow(new RuntimeException("Invalid username or password"));
+
+    ResponseEntity<?> response = authController.login(loginUser);
+
+    assertEquals(401, response.getStatusCode().value());
+    assertEquals("Invalid username or password", response.getBody());
+  }
+
+  @Test
+  void testJwtTestWithEmptyBearerToken() {
+    String authHeader = "Bearer ";
+    
+    when(jwtService.extractAllClaims(""))
+        .thenThrow(new RuntimeException("Empty token"));
+
+    ResponseEntity<?> response = authController.jwtTest(authHeader);
+
+    assertEquals(401, response.getStatusCode().value());
+    assertEquals("Invalid or expired JWT token", response.getBody());
+  }
+
+  @Test
+  void testRegisterWithSpecialCharactersInUsername() {
+    User requestUser = new User();
+    requestUser.setUsername("test_user-123");
+    requestUser.setPassword("password123");
+    requestUser.setEmail("test@example.com");
+
+    User savedUser = new User();
+    savedUser.setId(1L);
+    savedUser.setUserId("test_user-1231234");
+    savedUser.setUsername("test_user-123");
+    savedUser.setEmail("test@example.com");
+
+    when(authService.register(requestUser)).thenReturn(savedUser);
+
+    ResponseEntity<?> response = authController.register(requestUser);
+
+    assertEquals(201, response.getStatusCode().value());
+    
+    @SuppressWarnings("unchecked")
+    Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+    assertEquals("User registered", responseBody.get("message"));
+  }
+
+  @Test
+  void testJwtTestEndpointReturnsExpirationInfo() {
+    String authHeader = "Bearer validToken";
+    
+    Claims claims = new DefaultClaims();
+    Date expirationDate = new Date(System.currentTimeMillis() + 3600000); // 1 hour from now
+    claims.setExpiration(expirationDate);
+    
+    when(jwtService.extractAllClaims("validToken")).thenReturn(claims);
+
+    ResponseEntity<?> response = authController.jwtTest(authHeader);
+
+    assertEquals(200, response.getStatusCode().value());
+    
+    @SuppressWarnings("unchecked")
+    Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
+    assertEquals("JWT is valid", responseBody.get("message"));
+    
+    // Check that secondsUntilExpiration is present and reasonable
+    Object secondsObj = responseBody.get("secondsUntilExpiration");
+    assertNotNull(secondsObj, "secondsUntilExpiration should be present");
+    assertTrue(secondsObj instanceof Number, "secondsUntilExpiration should be a number");
+    
+    long seconds = ((Number) secondsObj).longValue();
+    assertTrue(seconds > 0 && seconds <= 3600, "Should have between 0 and 3600 seconds until expiration");
   }
 
 }

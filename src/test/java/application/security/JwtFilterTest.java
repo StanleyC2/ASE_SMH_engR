@@ -167,6 +167,101 @@ class JwtFilterTest {
         verify(jwtService, times(1)).validateToken("");
     }
 
+    @Test
+    void testFilterChainAlwaysContinues() throws ServletException, IOException {
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/test"));
+        when(request.getHeader("Authorization")).thenReturn(null);
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(chain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void testFilterChainContinuesAfterValidToken() throws ServletException, IOException {
+        String validToken = "valid.token";
+        String authHeader = "Bearer " + validToken;
+        
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/resource"));
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
+        when(jwtService.validateToken(validToken)).thenReturn(true);
+        when(jwtService.extractUsername(validToken)).thenReturn("test@example.com");
+        when(jwtService.extractUserId(validToken)).thenReturn("testuser123");
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(chain, times(1)).doFilter(request, response);
+    }
+
+    @Test
+    void testFilterChainContinuesAfterInvalidToken() throws ServletException, IOException {
+        String invalidToken = "bad.token";
+        String authHeader = "Bearer " + invalidToken;
+        
+        when(request.getMethod()).thenReturn("DELETE");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/resource"));
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
+        when(jwtService.validateToken(invalidToken)).thenReturn(false);
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(chain, times(1)).doFilter(request, response);
+        verify(jwtService, never()).extractUsername(anyString());
+    }
+
+    @Test
+    void testFilterWithBearerPrefixCaseSensitive() throws ServletException, IOException {
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/test"));
+        when(request.getHeader("Authorization")).thenReturn("bearer token"); // lowercase
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(jwtService, never()).validateToken(anyString());
+    }
+
+    @Test
+    void testFilterWithBearerTokenContainingSpaces() throws ServletException, IOException {
+        String token = "token.with.dots";
+        String authHeader = "Bearer " + token;
+        
+        when(request.getMethod()).thenReturn("PATCH");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/update"));
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
+        when(jwtService.validateToken(token)).thenReturn(true);
+        when(jwtService.extractUsername(token)).thenReturn("user@test.com");
+        when(jwtService.extractUserId(token)).thenReturn("user999");
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(jwtService, times(1)).validateToken(token);
+        verify(request, times(1)).setAttribute("userId", "user999");
+    }
+
+    @Test
+    void testFilterExtractsAndStoresUserIdCorrectly() throws ServletException, IOException {
+        String token = "my.jwt.token";
+        String authHeader = "Bearer " + token;
+        String expectedEmail = "john.doe@example.com";
+        String expectedUserId = "johndoe456";
+        
+        when(request.getMethod()).thenReturn("PUT");
+        when(request.getRequestURL()).thenReturn(new StringBuffer("http://localhost/api/profile"));
+        when(request.getHeader("Authorization")).thenReturn(authHeader);
+        when(jwtService.validateToken(token)).thenReturn(true);
+        when(jwtService.extractUsername(token)).thenReturn(expectedEmail);
+        when(jwtService.extractUserId(token)).thenReturn(expectedUserId);
+
+        jwtFilter.doFilterInternal(request, response, chain);
+
+        verify(jwtService, times(1)).extractUsername(token);
+        verify(jwtService, times(1)).extractUserId(token);
+        verify(request, times(1)).setAttribute("userId", expectedUserId);
+        verify(chain, times(1)).doFilter(request, response);
+    }
+
     // --- Custom log handler to capture logs ---
     static class TestLogHandler extends Handler {
         List<LogRecord> records = new ArrayList<>();
