@@ -343,6 +343,102 @@ should return
 
 ---
 
+## Client Application
+
+### Location
+The client code is located in the `client/` directory of this repository.
+
+### What the Client Does
+The Roommate Matching Client is a command-line application that demonstrates how to interact with the service API. It allows users to:
+- Register and authenticate with the service
+- Create and manage roommate profiles (location, budget, preferences)
+- Search for potential roommates
+- Submit personality questionnaires and receive compatibility-based recommendations
+- Send, accept, and reject roommate requests
+
+The client exercises all major API endpoints and demonstrates real-world usage patterns.
+
+### Building the Client
+```bash
+cd client
+../mvnw clean package
+```
+
+This creates an executable JAR: `client/target/roommate-client-1.0.0.jar`
+
+### Running the Client
+Connect to localhost (default):
+```bash
+cd client
+java -jar target/roommate-client-1.0.0.jar
+```
+
+Connect to a different service URL:
+```bash
+java -jar target/roommate-client-1.0.0.jar http://your-service-url:8080
+```
+
+The client presents an interactive menu for all available operations.
+
+### Multiple Client Instances
+The service fully supports multiple simultaneous client instances. To test this, simply open multiple terminal windows and run the client JAR in each:
+
+**Terminal 1:**
+```bash
+cd client
+java -jar target/roommate-client-1.0.0.jar
+```
+
+**Terminal 2:**
+```bash
+cd client
+java -jar target/roommate-client-1.0.0.jar
+```
+
+**Terminal 3:**
+```bash
+cd client
+java -jar target/roommate-client-1.0.0.jar
+```
+
+Each client instance operates independently and can be used by different users concurrently.
+
+### How the Service Distinguishes Between Clients
+
+The service identifies and distinguishes between multiple client instances using the following mechanisms:
+
+1. **Unique Session IDs (Client-Side)**: Each client instance generates a unique UUID-based session ID on startup (something like`c8b70d75`). This ID is displayed in all client output for debugging and tracking purposes.
+
+2. **JWT Token Authentication (Service-Side)**: After login, each client receives a unique JWT token that is tied to the authenticated user's account. This token is included in the `Authorization: Bearer <token>` header for all protected API calls.
+
+3. **User-Based Identification**: The service extracts the user identity from the JWT token and associates all requests with the specific authenticated user, ensuring proper isolation between different users/clients.
+
+4. **Stateless Design**: The service uses stateless authentication, allowing unlimited concurrent client connections without session conflicts.
+
+**Example Flow:**
+```
+Client A (Session: abc123, User: alice) → Login → Receives JWT Token A
+Client B (Session: def456, User: bob)   → Login → Receives JWT Token B
+
+Client A makes request with Token A → Service identifies as alice
+Client B makes request with Token B → Service identifies as bob
+```
+
+### End-to-End Testing
+
+**Automated Test:**
+```bash
+cd client
+./test-client-comprehensive.sh
+```
+
+This script tests: authentication flows, profile management, personality matching, request handling, multi-client concurrent operations (3 simultaneous instances), unique session ID generation, and verifies the service properly distinguishes between clients. Also you can see if it worked by checking the number of "PASS" versus number of "FAIL" for the tests
+
+
+
+
+---
+
 ## Testing & Style
 
 Run tests:
