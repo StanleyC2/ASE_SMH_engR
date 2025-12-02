@@ -42,3 +42,11 @@ checkstyle-result.xml
 cpd.xml
 spotless-index
 pmd.xml
+
+# -------------------------
+# Database files (H2)
+# -------------------------
+data/
+*.db
+*.mv.db
+*.trace.db
