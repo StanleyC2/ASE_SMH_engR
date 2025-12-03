@@ -60,7 +60,7 @@ class ListingServiceTest {
                 .build();
     }
 
-    // --- Create Listing Tests ---
+    // --- Test Cases for Create Listing ---
 
     @Test
     void createListing_Success() {
@@ -102,7 +102,7 @@ class ListingServiceTest {
         });
     }
 
-    // --- Update Listing Tests ---
+    // --- Test Cases for Update Listing ---
 
     @Test
     void updateListing_Success_AllFields() {
@@ -137,7 +137,6 @@ class ListingServiceTest {
         // Hits all "else" (implicit) branches where fields are null
         ListingRequest request = new ListingRequest(); // All null
 
-        // Reset listing to original state just in case
         listing.setRent(3000);
 
         when(listingRepository.findById(100L)).thenReturn(Optional.of(listing));
@@ -170,7 +169,7 @@ class ListingServiceTest {
                 listingService.updateListing(100L, "thief@test.com", request));
     }
 
-    // --- Delete Listing Tests ---
+    // --- Test Cases for Delete Listing ---
 
     @Test
     void deleteListing_Success_Owner() {
@@ -200,7 +199,7 @@ class ListingServiceTest {
                 listingService.deleteListing(999L, "agent@test.com"));
     }
 
-    // --- Search Tests ---
+    // --- Test Cases for Search ---
 
     @Test
     void search_Success() {

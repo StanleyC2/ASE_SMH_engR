@@ -187,6 +187,7 @@ Creates or updates a user’s roommate preferences.
 Takes in city, budget, notes, and whether the user is looking for roommates.  
 Returns 404 if the user isn’t found.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/roommates/new \
   -H "Authorization: Bearer <JWT_TOKEN>
@@ -200,7 +201,7 @@ curl -X POST http://localhost:8080/roommates/new \
   }'
 ```
 
-should return
+**Response:**
 ```
 {"id":1,"city":"New York","minBudget":2000,"maxBudget":3500,"notes":"Prefer quiet roommates","lookingForRoommates":true}
 ```
@@ -211,12 +212,13 @@ should return
 
 Returns all users currently looking for roommates.
 
+**Request:**
 ```
 curl -X GET http://localhost:8080/roommates/search \
 -H "Authorization: Bearer <JWT_TOKEN>
 ```
 
-should return
+**Response:**
 ```
 [{"id":1,"city":"New York","minBudget":2000,"maxBudget":3500,"notes":"Prefer quiet roommates","lookingForRoommates":true}]
 ```
@@ -227,6 +229,7 @@ should return
 
 This endpoint gets the personality responses for a user trying to find roommates. It takes in the user ID and 8 integer response values (1–10). These responses will be stored in the database. Every time a user enters a new response, it will replace the old ones. If the `userId` is not linked to any existing user, it will show a 404 error. If the given response is invalid (not 8 values, or not between 1–10), it will show a 400 error.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/roommates/personality \
   -H "Authorization: Bearer <JWT_Token>" \
@@ -237,7 +240,7 @@ curl -X POST http://localhost:8080/roommates/personality \
   }'
 ```
 
-should return
+**Response:**
 ```
 {"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
 ```
@@ -248,6 +251,7 @@ should return
 
 This endpoint gets a list of users that is recommended to the user based on their previous responses. If they have not called the `/rec/roommates/personality` endpoint before, it will show a HTTP 404 error. And if any of the responses were invalid, it will show a HTTP 400 error.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/rec/roommates/personality \
   -H "Authorization: Bearer <JWT_TOKEN>" \
@@ -257,7 +261,7 @@ curl -X POST http://localhost:8080/rec/roommates/personality \
   }'
 ```
 
-should return
+**Response:**
 ```
 {"userId":1,"responseValues":[1,2,3,4,5,6,7,8]}
 ```
@@ -266,6 +270,7 @@ should return
 
 ### /roommates/request/{candidateId}
 
+**Request:**
 Creates a new roommate request between users.  
 Takes a candidate user ID and optional requester username.  
 Returns 404 if either user isn’t found.
@@ -275,7 +280,7 @@ curl -X POST "http://localhost:8080/roommates/request/2?requesterUsername=admin"
 -H "Authorization: Bearer <JWT_TOKEN>
 ```
 
-should return
+**Response:**
 ```
 {"id":5,"requester":"admin","candidate":"user2","status":"PENDING"}
 ```
@@ -284,6 +289,7 @@ should return
 
 ### /roommates/{matchId}/accept
 
+**Request:**
 Accepts a roommate request.  
 Returns 404 if the match doesn’t exist.
 
@@ -292,7 +298,7 @@ curl -X POST http://localhost:8080/roommates/5/accept
 -H "Authorization: Bearer <JWT_TOKEN>
 ```
 
-should return
+**Response:**
 ```
 {"id":5,"status":"ACCEPTED"}
 ```
@@ -304,12 +310,13 @@ should return
 Rejects a roommate request.  
 Returns 404 if the match doesn’t exist.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/roommates/5/reject
 -H "Authorization: Bearer <JWT_TOKEN>
 ```
 
-should return
+**Response:**
 ```
 {"id":5,"status":"REJECTED"}
 ```
@@ -324,6 +331,7 @@ Registers a new renter account.
 Takes in username, email, password, and role.  
 If the username or email already exists, it returns a 400 error.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/user/renter/new \
   -H "Content-Type: application/json" \
@@ -335,7 +343,7 @@ curl -X POST http://localhost:8080/user/renter/new \
   }'
 ```
 
-should return
+**Response:**
 ```
 {"id":1,"username":"newRenter","email":"renter@example.com","role":"RENTER"}
 ```
@@ -348,6 +356,7 @@ Registers a new agent account.
 Takes in username, email, password, and role.  
 If the username or email already exists, it returns a 400 error.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/user/agent/new \
   -H "Content-Type: application/json" \
@@ -359,7 +368,7 @@ curl -X POST http://localhost:8080/user/agent/new \
   }'
 ```
 
-should return
+**Response:**
 ```
 {"id":2,"username":"newAgent","email":"agent@example.com","role":"AGENT"}
 ```
@@ -371,15 +380,47 @@ should return
 Stub endpoint for email verification.  
 Currently returns a placeholder message until email service is connected.
 
+**Request:**
 ```
 curl -X POST http://localhost:8080/user/1/verify-email
 ```
 
-should return
+**Response:**
 ```
 "To be connected to endpoint"
 ```
 
+---
+
+## Listing Endpoints
+### listings/new
+
+Creates a new property listing. Takes in property details such as neighborhood, rent, specifications (bed/bath), and amenities. Returns the created listing with its generated ID.
+
+**Request:**
+```
+curl -X POST http://localhost:8080/listings/new \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -d '{
+    "neighborhood": "UWS",
+    "rent": 4500,
+    "bedrooms": 2,
+    "bathrooms": 1,
+    "hasLift": true,
+    "hasHeat": true,
+    "hasAC": false,
+    "description": "Lovely pre-war building near the park."
+  }'
+  ```
+
+### listing/search
+Searches for listings based on query parameters. Supported parameters include neighborhood, maxRent, and bedrooms.
+
+**Request:**
+```
+curl “http://localhost:8080/listings/search?neighborhood=UWS&maxRent=5000”
+```
 ---
 
 ## Client Application
