@@ -1,0 +1,9 @@
+runtime: java17
+entrypoint: java -jar target/individualproject-0.0.1-SNAPSHOT.jar
+
+env_variables:
+  SPRING_PROFILES_ACTIVE: cloud
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 5

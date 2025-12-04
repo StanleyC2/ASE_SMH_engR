@@ -24,7 +24,7 @@ jobs:
           cache: maven
 
       - name: Build & run tests
-        run: mvn -B clean verify
+        run: mvn -B clean verify "-Dspring-boot.test.profiles=local"
 
       - name: Run Checkstyle
         run: mvn -B checkstyle:check
