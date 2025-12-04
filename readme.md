@@ -26,16 +26,16 @@ cd ASE_SMH_engR
 ### 3. Run the service locally
 Default port is `localhost:8080`
 ```
-./mvnw spring-boot:run
+./mvnw spring-boot:run "-Dspring-boot.test.profiles=local"
 ```
 
 ---
 
-## Persistent Storage
+## Local Persistent Storage
 
 This service uses an **H2 file-based database** for persistent storage, ensuring all data (users, listings, roommate preferences, matches, etc.) is retained across application restarts.
 
-### Database Configuration
+### Local Database Configuration
 
 - **Database Type**: H2 (file-based)
 - **Storage Location**: `./data/roommate_db.mv.db`
@@ -51,6 +51,20 @@ For debugging and development, you can access the H2 database console at:
 - **Password**: `best_group_ever`
 
 **Note**: The H2 console should be disabled in production environments for security.
+
+## Cloud Persistent Storage
+
+This service uses an **Postgresql Cloud-Sql database** for persistent storage, ensuring all data 
+(users, 
+listings, roommate preferences, matches, etc.) is retained across application restarts.
+
+### Cloud Database Configuration
+
+- **Database Type**: Postgresql
+- **Database Name**: api_db
+- **Connection URL**: `jdbc:postgresql://google/api_db?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=ase-smh-engr:us-central1:free-trial-first-project`
+- **Persistence**: All data is automatically saved to the cloud database and will be saved 
+  across restarts.
 
 ### Database Schema
 
@@ -523,7 +537,7 @@ This script tests: authentication flows, profile management, personality matchin
 
 Run tests:
 ```
-./mvnw test
+./mvnw test "-Dspring-boot.test.profiles=local"
 ```
 
 Run style check:
@@ -532,3 +546,12 @@ Run style check:
 ```
 
 You can find already generated reports in the reports folder at checkstyle.html and site/index.html
+
+### Notes on Spring profiles
+application-cloud.properties is the cloud profile for running this API.
+
+application-local.properties is the local profile for running this API.
+
+
+The cloud profile should only be used for deploying the application, for all other purposes like 
+testing, the local profile should be used instead.
