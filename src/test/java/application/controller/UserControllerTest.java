@@ -145,4 +145,69 @@ public class UserControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(errorMessage, response.getBody());
     }
+
+    @Test
+    @DisplayName("Should return 401 when Authorization header is null for registerAgent")
+    void registerAgent_NullHeader() {
+        ResponseEntity<?> response = userController.registerAgent(null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid Authorization header", response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when Authorization header doesn't start with Bearer for registerAgent")
+    void registerAgent_InvalidHeaderFormat() {
+        String invalidHeader = "InvalidTokenFormat";
+
+        ResponseEntity<?> response = userController.registerAgent(invalidHeader);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid Authorization header", response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should handle exception in registerAgent and return bad request")
+    void registerAgent_ExceptionHandling() {
+        String token = "valid.jwt.token";
+        String authHeader = "Bearer " + token;
+        String userEmail = "agent@example.com";
+        String errorMessage = "User not found";
+
+        when(jwtService.extractUsername(token)).thenReturn(userEmail);
+        when(userService.updateAgentRoleByEmail(userEmail))
+                .thenThrow(new IllegalArgumentException(errorMessage));
+
+        ResponseEntity<?> response = userController.registerAgent(authHeader);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(errorMessage, response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should handle exception in registerRenter and return bad request")
+    void registerRenter_ExceptionHandling() {
+        String token = "valid.jwt.token";
+        String authHeader = "Bearer " + token;
+        String userEmail = "renter@example.com";
+        String errorMessage = "User not found";
+
+        when(jwtService.extractUsername(token)).thenReturn(userEmail);
+        when(userService.updateRenterRoleByEmail(userEmail))
+                .thenThrow(new IllegalArgumentException(errorMessage));
+
+        ResponseEntity<?> response = userController.registerRenter(authHeader);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(errorMessage, response.getBody());
+    }
+
+    @Test
+    @DisplayName("Should return 401 when Authorization header is null for registerRenter")
+    void registerRenter_NullHeader() {
+        ResponseEntity<?> response = userController.registerRenter(null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("Missing or invalid Authorization header", response.getBody());
+    }
 }
