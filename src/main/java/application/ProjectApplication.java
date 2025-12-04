@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Main entry point for the ProjectApplication Spring Boot application.
  */
 @SpringBootApplication
+@SuppressWarnings("PMD.UseUtilityClass")
 public class ProjectApplication {
 
     /**

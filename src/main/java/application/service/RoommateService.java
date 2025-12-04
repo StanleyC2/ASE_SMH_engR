@@ -151,8 +151,8 @@ public class RoommateService {
         }
         final Queue<ScoredUser> userAndCos = new PriorityQueue<>(Comparator.comparingDouble(a -> a.score));
         for (RoommatePreference candidatePref : listActive()) {
-            if ((candidatePref.getUser().getId().equals(user.getId()))
-                    || !(userPref.getCity().equals(candidatePref.getCity()))
+            if (candidatePref.getUser().getId().equals(user.getId())
+                    || !userPref.getCity().equals(candidatePref.getCity())
                     || !(userPref.getMaxBudget() >= candidatePref.getMinBudget()
                     && candidatePref.getMaxBudget() >= userPref.getMinBudget())) {
                 continue;
@@ -199,7 +199,7 @@ public class RoommateService {
             if (Math.abs(magnitude1) < 1e-6 || Math.abs(magnitude2) < 1e-6) {
                 return 0.0;
             }
-            return (dotProduct / (magnitude1 * magnitude2));
+            return dotProduct / (magnitude1 * magnitude2);
         }
     }
 

@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +28,10 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
-        logger.info("Logged New API Request: " + request.getMethod() + " " + request.getRequestURL());
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Logged New API Request: " + request.getMethod() +
+                    " " + request.getRequestURL());
+        }
 
         final String header = request.getHeader("Authorization");
 
