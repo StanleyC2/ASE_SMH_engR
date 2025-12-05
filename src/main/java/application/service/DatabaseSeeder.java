@@ -35,10 +35,6 @@ public class DatabaseSeeder {
             // Use AuthService to register users (handles password encoding)
             authService.register(admin);
             authService.register(user);
-
-            System.out.println("Database seeded with example users.");
-        } else {
-            System.out.println("Database already contains users. Skipping seeding.");
         }
     }
 }

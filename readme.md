@@ -565,6 +565,22 @@ Run style check:
 
 You can find already generated reports in the reports folder at checkstyle.html and site/index.html
 
+### Static Bug Finder
+
+Install PMD[https://pmd.github.io/] 
+
+Run the quickstart and bestpractices rulesets on the src/main files:
+```
+pmd.bat check -d src/main  -R rulesets/java/quickstart.xml -f text
+
+```
+```
+pmd.bat check -d src/main  -R category/java/bestpractices.xml -f text
+
+```
+
+You can find a previously generated report in the bugs.md file
+
 ### Notes on Spring profiles
 application-cloud.properties is the cloud profile for running this API.
 
